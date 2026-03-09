@@ -3,19 +3,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { portfolioContent } from '@/features/portfolio/content'
-
-type ApiProject = {
-  id: string
-  title: string
-  description: string
-  link: string | null
-  imageUrl: string | null
-  tags: string[]
-  orderIndex: number
-}
+import { fetchPublicProjects, type ApiProject } from '../api/get-projects'
 
 type DisplayProject = {
   key: string
@@ -27,36 +15,15 @@ type DisplayProject = {
   technologies: string[]
 }
 
-async function fetchPublicProjects(): Promise<ApiProject[]> {
-  const res = await fetch('/api/portfolio/projects')
-  if (!res.ok) throw new Error('Failed to fetch projects')
-  const json = (await res.json()) as { success: boolean; data: ApiProject[] }
-  return json.data
-}
-
-function mergeProjects(apiProjects: ApiProject[]): DisplayProject[] {
-  // Static projects from content.ts always included
-  const staticItems: DisplayProject[] = portfolioContent.projects.map((p) => ({
-    key: `static-${p.name}`,
-    name: p.name,
-    role: p.role,
-    href: p.href,
-    summary: p.summary,
-    highlights: p.highlights,
-    technologies: p.technologies,
-  }))
-
-  // API projects added after static ones
-  const apiItems: DisplayProject[] = apiProjects.map((p) => ({
-    key: `api-${p.id}`,
+function formatProjects(apiProjects: ApiProject[]): DisplayProject[] {
+  return apiProjects.map((p) => ({
+    key: p.id,
     name: p.title,
     href: p.link,
     summary: p.description,
     highlights: [],
     technologies: p.tags,
   }))
-
-  return [...staticItems, ...apiItems]
 }
 
 export function ProjectsGrid() {
@@ -65,7 +32,7 @@ export function ProjectsGrid() {
     queryFn: fetchPublicProjects,
   })
 
-  const projects = mergeProjects(apiProjects)
+  const projects = formatProjects(apiProjects)
   return (
     <div className="space-y-6">
       <section className="space-y-4">
@@ -79,65 +46,70 @@ export function ProjectsGrid() {
         </p>
       </section>
 
-      <div className="grid grid-cols-12 gap-4 md:gap-5">
+      <div className="grid grid-cols-1 gap-[1px] border border-border/50 bg-border/50 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project, index) => (
           <motion.div
             key={project.key}
-            className={`col-span-12 ${index === 0 ? 'lg:col-span-7' : 'lg:col-span-5'}`}
+            className="flex flex-col bg-background p-6 transition-colors hover:bg-muted/10 md:p-8"
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: index * 0.08 }}
-            whileHover={{ y: -5 }}
           >
-            <Card className="h-full border-border/60 bg-background/70 backdrop-blur-md">
-              <CardHeader>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    {project.role && (
-                      <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                        {project.role}
-                      </p>
-                    )}
-                    <CardTitle className="mt-2 text-2xl font-bold tracking-tighter">
-                      {project.name}
-                    </CardTitle>
-                  </div>
-                  {project.href && (
-                    <Button
-                      aria-label={`Open ${project.name}`}
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full"
-                      render={<a href={project.href} rel="noreferrer" target="_blank" />}
-                    >
-                      <ArrowUpRight className="size-4" />
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <p className="text-sm leading-6 text-muted-foreground">{project.summary}</p>
-                {project.highlights.length > 0 && (
-                  <ul className="space-y-3 text-sm leading-6 text-foreground/90">
-                    {project.highlights.map((highlight) => (
-                      <li key={highlight} className="flex gap-3">
-                        <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
-                        <span>{highlight}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {project.technologies.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologies.map((technology) => (
-                      <Badge key={technology} variant="outline">
-                        {technology}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <div className="mb-6 flex items-start justify-between gap-3">
+              <div className="flex items-center gap-x-2">
+                <span className="text-xs font-mono opacity-40">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                  {project.role || 'PROJECT'}
+                </span>
+              </div>
+              {project.href && (
+                <a
+                  href={project.href}
+                  rel="noreferrer"
+                  target="_blank"
+                  className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label={`Open ${project.name}`}
+                >
+                  <ArrowUpRight className="size-4" />
+                </a>
+              )}
+            </div>
+            
+            <div className="mb-2">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                {project.name}
+              </h2>
+            </div>
+            
+            <div className="mb-8 flex-1">
+              <p className="text-sm leading-relaxed text-muted-foreground">{project.summary}</p>
+              {project.highlights.length > 0 && (
+                <ul className="mt-4 space-y-2 text-sm leading-6 text-foreground/90">
+                  {project.highlights.map((highlight) => (
+                    <li key={highlight} className="flex gap-3">
+                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            
+            {project.technologies.length > 0 && (
+               <div className="mt-auto flex flex-wrap gap-2">
+                {project.technologies.map((tech) => (
+                  <Badge 
+                    key={tech} 
+                    variant="outline" 
+                    className="rounded-sm border-border/40 px-2 py-0.5 text-[10px] font-mono tracking-wider text-muted-foreground backdrop-blur-none"
+                  >
+                    {tech}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </motion.div>
         ))}
       </div>

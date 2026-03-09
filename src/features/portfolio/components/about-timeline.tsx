@@ -5,26 +5,8 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { ExperienceItemType, ExperiencePositionItemType } from '@/components/work-experience/work-experience'
 import { WorkExperience } from '@/components/work-experience/work-experience'
-import { WORK_EXPERIENCE, portfolioContent } from '@/features/portfolio/content'
-
-type ApiExperience = {
-  id: string
-  company: string
-  role: string
-  startDate: string
-  endDate: string | null
-  description: string | null
-  employmentType?: string | null
-  skills?: string[]
-  orderIndex: number
-}
-
-async function fetchPublicExperiences(): Promise<ApiExperience[]> {
-  const res = await fetch('/api/portfolio/experiences')
-  if (!res.ok) return []
-  const json = await res.json() as { data: ApiExperience[] }
-  return json.data
-}
+import { portfolioContent } from '@/features/portfolio/content'
+import { fetchPublicExperiences, type ApiExperience } from '../api/get-experiences'
 
 function pickPositionIcon(role: string) {
   const lower = role.toLowerCase()
@@ -40,13 +22,12 @@ function formatPeriod(start: string, end: string | null): string {
   return end ? `${fmt(start)} – ${fmt(end)}` : `${fmt(start)} – ∞`
 }
 
-function mergeExperiences(apiExperiences: ApiExperience[] | undefined): ExperienceItemType[] {
-  const staticIds = new Set(WORK_EXPERIENCE.map((e) => e.id))
-  const filtered = (apiExperiences ?? []).filter((e) => !staticIds.has(e.id))
+function formatExperiences(apiExperiences: ApiExperience[] | undefined): ExperienceItemType[] {
+  if (!apiExperiences) return []
 
   // Group API experiences by company name
   const companyMap = new Map<string, ApiExperience[]>()
-  for (const exp of filtered) {
+  for (const exp of apiExperiences) {
     const group = companyMap.get(exp.company) ?? []
     group.push(exp)
     companyMap.set(exp.company, group)
@@ -79,7 +60,7 @@ function mergeExperiences(apiExperiences: ApiExperience[] | undefined): Experien
     })
   }
 
-  return [...apiItems, ...WORK_EXPERIENCE]
+  return apiItems
 }
 
 export function AboutTimeline() {
@@ -89,7 +70,7 @@ export function AboutTimeline() {
     staleTime: 1000 * 60 * 5,
   })
 
-  const experiences = mergeExperiences(apiExperiences)
+  const experiences = formatExperiences(apiExperiences)
   return (
     <div className="space-y-10">
       <section className="space-y-4">
