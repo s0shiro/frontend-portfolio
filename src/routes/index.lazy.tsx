@@ -1,14 +1,11 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 
+import { HomeBento } from '@/features/portfolio/components/home-bento'
+
 export const Route = createLazyFileRoute('/')({
   component: Index,
 })
 
 function Index() {
-  return (
-    <div className="p-2">
-      <h3>Welcome Home!</h3>
-      <p>This is the file-based index route.</p>
-    </div>
-  )
+  return <HomeBento />
 }
