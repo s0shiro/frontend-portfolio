@@ -1,14 +1,17 @@
 import { motion } from "framer-motion";
-import { startTransition, useEffect, useState } from "react";
+import { startTransition } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { LogOut, FolderOpen, Mail, Briefcase, MailOpen, ArrowRight, ChevronRight } from "lucide-react";
-import { fetchProjects, fetchMessages, fetchExperiences } from "../api.ts";
-import type { Project, Message, Experience } from "../types.ts";
+import { LogOut, FolderOpen, Mail, Briefcase, MailOpen, ArrowRight, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { signOut } from "@/features/auth/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { useAdminProjects } from "@/features/admin-projects/hooks/use-admin-projects";
+import { useAdminMessages } from "@/features/admin-messages/hooks/use-admin-messages";
+import { useAdminExperiences } from "@/features/admin-experiences/hooks/use-admin-experiences";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 
 const container = {
   hidden: { opacity: 0 },
@@ -51,22 +54,26 @@ function StatCard({ label, value, icon: Icon, accent, iconBg, description }: Sta
 }
 
 export function AdminDashboard() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const { projects } = useAdminProjects();
+  const { messages } = useAdminMessages();
+  const { experiences } = useAdminExperiences();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchProjects().then(setProjects);
-    fetchMessages().then(setMessages);
-    fetchExperiences().then(setExperiences);
-  }, []);
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      await signOut();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      startTransition(() => {
+        void navigate({ to: "/admin/login" as never });
+      });
+    },
+  });
 
-  async function handleLogout() {
-    await signOut();
-    startTransition(() => {
-      void navigate({ to: "/admin/login" as never });
-    });
+  function handleLogout() {
+    logoutMutation.mutate();
   }
 
   const unread = messages.filter((m) => !m.isRead);
@@ -103,11 +110,12 @@ export function AdminDashboard() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => void handleLogout()}
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
             className="gap-2 border-border/60 bg-background/60 backdrop-blur-md hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
           >
-            <LogOut className="size-4" />
-            Logout
+            {logoutMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
+            {logoutMutation.isPending ? "Logging out..." : "Logout"}
           </Button>
         </motion.div>
       </motion.div>

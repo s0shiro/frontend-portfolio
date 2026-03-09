@@ -21,7 +21,7 @@ export async function updateAdminUserRole(
 ): Promise<AdminUser> {
   const { error } = await authClient.admin.setRole({
     userId: input.id,
-    role: input.role as any,
+    role: input.role as 'admin' | 'user',
   })
 
   if (error) {

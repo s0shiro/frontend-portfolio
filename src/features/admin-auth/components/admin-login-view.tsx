@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { signIn } from '@/features/auth/lib/auth-client'
+import { useAdminSignIn } from '../hooks/use-admin-sign-in'
 // --- ReactBits Aurora background ---
 import PixelBlast from '@/components/reactbits/pixel-blast'
 
@@ -20,6 +20,7 @@ type LoginValues = z.infer<typeof loginSchema>
 
 export function AdminLoginView() {
   const navigate = useNavigate()
+  const { mutateAsync: signInEmail, isPending } = useAdminSignIn()
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -29,14 +30,16 @@ export function AdminLoginView() {
   })
 
   async function onSubmit(values: LoginValues) {
-    const result = await signIn.email({
-      email: values.email,
-      password: values.password,
-    })
-    if (!result.error) {
+    try {
+      await signInEmail({
+        email: values.email,
+        password: values.password,
+      })
       navigate({ to: '/admin' })
+    } catch (error) {
+      // handle error display as needed
+      console.error(error)
     }
-    // handle error display as needed
   }
 
   return (
@@ -106,8 +109,8 @@ export function AdminLoginView() {
               <FieldError errors={form.formState.errors.root ? [{ message: form.formState.errors.root.message }] : []} />
               {/* Submit Button */}
               <motion.div whileHover={{ y: -2, scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Button className="w-full font-bold tracking-tight text-base py-2 bg-primary text-background rounded-lg shadow-none border-none" type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? 'Continue...' : 'Continue'}
+                <Button className="w-full font-bold tracking-tight text-base py-2 bg-primary text-background rounded-lg shadow-none border-none" type="submit" disabled={isPending}>
+                  {isPending ? 'Continue...' : 'Continue'}
                 </Button>
               </motion.div>
             </form>

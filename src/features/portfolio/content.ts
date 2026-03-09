@@ -1,27 +1,4 @@
-import type { ExperienceItemType } from '@/components/work-experience/work-experience'
 import type { PortfolioContent } from '@/features/portfolio/types'
-import { Code } from 'lucide-react'
-
-export const WORK_EXPERIENCE: ExperienceItemType[] = [
-  {
-    id: "ramcar-group",
-    companyName: "Ramcar Group of Companies",
-    companyLogo: undefined,
-    isCurrentEmployer: false,
-    positions: [
-      {
-        id: "intern-1",
-        title: "Full Stack Developer Intern",
-        employmentPeriod: "486 hours",
-        employmentType: "Internship",
-        icon: Code,
-        description:
-          "- Improved a web-based asset inventory management system with delivery receipt generation and barcode-based item selection.\n- Implemented role-based user management to support cleaner operational control across the system.\n- Worked inside an Agile team and joined code reviews focused on maintainability, readability, and efficient implementation.",
-        skills: ["React", "Agile", "Full Stack", "System Management"],
-      },
-    ],
-  },
-]
 
 export const portfolioContent: PortfolioContent = {
   profile: {
@@ -39,47 +16,8 @@ export const portfolioContent: PortfolioContent = {
       },
     ],
   },
-  experience: [
-    {
-      company: 'Ramcar Group of Companies',
-      role: 'Full Stack Developer Intern',
-      periodLabel: 'Professional Experience',
-      durationLabel: '486 hours',
-      highlights: [
-        'Improved a web-based asset inventory management system with delivery receipt generation and barcode-based item selection.',
-        'Implemented role-based user management to support cleaner operational control across the system.',
-        'Worked inside an Agile team and joined code reviews focused on maintainability, readability, and efficient implementation.',
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: 'Crop Production Monitoring System',
-      role: 'Lead Full Stack Developer',
-      href: 'https://growsmart.app',
-      summary:
-        'A full-stack platform that digitized crop monitoring and reporting for the Marinduque Provincial Agriculture Office.',
-      highlights: [
-        'Built farmer registration, crop record management, email verification, and map-based monitoring with Leaflet integration.',
-        'Automated crop report calculations and monthly summaries to reduce manual work and improve data accuracy.',
-      ],
-      technologies: ['React', 'Node.js', 'TypeScript', 'Leaflet', 'PostgreSQL'],
-      featured: true,
-    },
-    {
-      name: 'Marinduque Vehicle Rental System',
-      role: 'Full Stack Developer',
-      href: 'https://mvr.onrender.com',
-      summary:
-        'A vehicle booking platform with secure API flows, admin tooling, and availability management.',
-      highlights: [
-        'Designed REST APIs for listings, bookings, payments, authentication, and role-based access control.',
-        'Built an admin dashboard for user verification, vehicle management, booking visibility, and automated notifications.',
-      ],
-      technologies: ['React', 'Express', 'JWT', 'MongoDB', 'REST API'],
-      featured: true,
-    },
-  ],
+  experience: [],
+  projects: [],
   education: [
     {
       institution: 'Marinduque State University',

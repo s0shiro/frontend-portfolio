@@ -1,4 +1,4 @@
-import { Link, Outlet, useMatchRoute, useRouter } from "@tanstack/react-router";
+import { Link, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -18,7 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { useAdminSession } from "@/features/admin-auth";
-import { authClient } from "@/features/auth/lib/auth-client";
+import { useImpersonate } from "@/features/admin-users/hooks/use-impersonate";
 
 const adminNavItems = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -30,19 +30,14 @@ const adminNavItems = [
 
 export function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isStopping, setIsStopping] = useState(false);
   const matchRoute = useMatchRoute();
-  const router = useRouter();
-  const { data: sessionData, refetch } = useAdminSession();
+  const { data: sessionData } = useAdminSession();
+  const { stopImpersonating, isStopping } = useImpersonate();
 
   const isImpersonating = !!sessionData?.session?.impersonatedBy;
 
-  const handleStopImpersonating = async () => {
-    setIsStopping(true);
-    await authClient.admin.stopImpersonating();
-    setIsStopping(false);
-    await refetch();
-    router.invalidate();
+  const handleStopImpersonating = () => {
+    stopImpersonating();
   };
 
   return (

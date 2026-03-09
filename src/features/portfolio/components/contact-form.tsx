@@ -1,7 +1,6 @@
-'use client'
-
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
+import { useMutation } from '@tanstack/react-query'
 import { z } from 'zod'
 import { motion } from 'framer-motion'
 import { Send } from 'lucide-react'
@@ -11,6 +10,9 @@ import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
+
+import { submitContactForm } from '../api/submit-contact'
+
 
 const contactFormSchema = z.object({
   name: z.string().min(2, {
@@ -36,24 +38,19 @@ export function ContactForm() {
     },
   })
 
-  async function onSubmit(values: ContactFormValues) {
-    const response = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: values.name,
-        email: values.email,
-        body: values.message,
-      }),
-    })
-
-    if (!response.ok) {
+  const mutation = useMutation({
+    mutationFn: submitContactForm,
+    onSuccess: () => {
+      toast.success('Message sent! Thank you for reaching out.')
+      form.reset()
+    },
+    onError: () => {
       toast.error('Failed to send message. Please try again.')
-      return
-    }
+    },
+  })
 
-    toast.success('Message sent! Thank you for reaching out.')
-    form.reset()
+  function onSubmit(values: ContactFormValues) {
+    mutation.mutate(values)
   }
 
   return (
@@ -118,10 +115,10 @@ export function ContactForm() {
 
         <Button 
           type="submit" 
-          disabled={form.formState.isSubmitting}
+          disabled={mutation.isPending}
           className="w-full sm:w-auto px-8"
         >
-          {form.formState.isSubmitting ? (
+          {mutation.isPending ? (
             'Sending...'
           ) : (
             <>
