@@ -1,3 +1,5 @@
+import { clientEnv } from '@/lib/env'
+
 export type ContactFormValues = {
   name: string
   email: string
@@ -5,7 +7,7 @@ export type ContactFormValues = {
 }
 
 export async function submitContactForm(values: ContactFormValues) {
-  const response = await fetch('/api/contact', {
+  const response = await fetch(`${clientEnv.VITE_API_URL}/api/contact`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -1,3 +1,4 @@
+import { clientEnv } from '@/lib/env'
 import type { Experience, Message, Project } from './types'
 
 type ApiResponse<T> = {
@@ -11,7 +12,10 @@ type MessageFilters = {
 }
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, {
+  const urlString = typeof input === 'string' ? input : input.toString()
+  const url = urlString.startsWith('http') ? urlString : `${clientEnv.VITE_API_URL}${urlString}`
+
+  const response = await fetch(url, {
     ...init,
     credentials: 'include',
     headers: {

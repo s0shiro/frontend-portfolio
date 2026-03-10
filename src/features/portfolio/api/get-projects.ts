@@ -1,3 +1,5 @@
+import { clientEnv } from '@/lib/env'
+
 export type ApiProject = {
   id: string
   title: string
@@ -9,7 +11,7 @@ export type ApiProject = {
 }
 
 export async function fetchPublicProjects(): Promise<ApiProject[]> {
-  const res = await fetch('/api/portfolio/projects')
+  const res = await fetch(`${clientEnv.VITE_API_URL}/api/portfolio/projects`)
   if (!res.ok) throw new Error('Failed to fetch projects')
   const json = await res.json() as { success: boolean; data: ApiProject[] }
   return json.data
