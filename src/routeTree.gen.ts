@@ -18,6 +18,7 @@ import { Route as AdminProjectsRouteImport } from './routes/admin.projects'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminExperiencesRouteImport } from './routes/admin.experiences'
+import { Route as AdminApikeysRouteImport } from './routes/admin.apikeys'
 
 const ProjectsLazyRouteImport = createFileRoute('/projects')()
 const ContactLazyRouteImport = createFileRoute('/contact')()
@@ -79,6 +80,11 @@ const AdminExperiencesRoute = AdminExperiencesRouteImport.update({
   path: '/experiences',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminApikeysRoute = AdminApikeysRouteImport.update({
+  id: '/apikeys',
+  path: '/apikeys',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutLazyRoute
   '/contact': typeof ContactLazyRoute
   '/projects': typeof ProjectsLazyRoute
+  '/admin/apikeys': typeof AdminApikeysRoute
   '/admin/experiences': typeof AdminExperiencesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutLazyRoute
   '/contact': typeof ContactLazyRoute
   '/projects': typeof ProjectsLazyRoute
+  '/admin/apikeys': typeof AdminApikeysRoute
   '/admin/experiences': typeof AdminExperiencesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/about': typeof AboutLazyRoute
   '/contact': typeof ContactLazyRoute
   '/projects': typeof ProjectsLazyRoute
+  '/admin/apikeys': typeof AdminApikeysRoute
   '/admin/experiences': typeof AdminExperiencesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/contact'
     | '/projects'
+    | '/admin/apikeys'
     | '/admin/experiences'
     | '/admin/login'
     | '/admin/messages'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/contact'
     | '/projects'
+    | '/admin/apikeys'
     | '/admin/experiences'
     | '/admin/login'
     | '/admin/messages'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/contact'
     | '/projects'
+    | '/admin/apikeys'
     | '/admin/experiences'
     | '/admin/login'
     | '/admin/messages'
@@ -247,10 +259,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminExperiencesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/apikeys': {
+      id: '/admin/apikeys'
+      path: '/apikeys'
+      fullPath: '/admin/apikeys'
+      preLoaderRoute: typeof AdminApikeysRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminApikeysRoute: typeof AdminApikeysRoute
   AdminExperiencesRoute: typeof AdminExperiencesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
@@ -260,6 +280,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminApikeysRoute: AdminApikeysRoute,
   AdminExperiencesRoute: AdminExperiencesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminMessagesRoute: AdminMessagesRoute,

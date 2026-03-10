@@ -6,6 +6,7 @@ import {
   Briefcase,
   Mail,
   Users,
+  Key,
   ArrowLeft,
   Menu,
   X,
@@ -26,6 +27,7 @@ const adminNavItems = [
   { path: "/admin/experiences", label: "Experiences", icon: Briefcase },
   { path: "/admin/messages", label: "Messages", icon: Mail },
   { path: "/admin/users", label: "Users", icon: Users },
+  { path: "/admin/apikeys", label: "API Keys", icon: Key },
 ] as const;
 
 export function AdminLayout() {
