@@ -4,6 +4,7 @@ import { Sidebar } from '../components/layout/Sidebar'
 import { MobileNav } from '../components/layout/MobileNav'
 import { ThemeProvider } from '@/features/theme'
 import { Toaster } from '@/components/ui/sonner'
+import { ChatbotWidget } from '@/features/chatbot'
 
 export const Route = createRootRoute({
   errorComponent: RootErrorComponent,
@@ -35,6 +36,7 @@ function RootLayout() {
             <Outlet />
           </main>
         </div>
+        <ChatbotWidget />
         <TanStackRouterDevtools position="bottom-right" />
         <Toaster richColors closeButton position="bottom-right" />
       </div>
