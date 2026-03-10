@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 
 interface MessagePayload {
   id: string;
@@ -231,12 +230,6 @@ export function ChatbotWidget() {
                     <Send className="h-4 w-4" />
                   </Button>
                 </form>
-                <div className="mt-2 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                  <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 whitespace-nowrap" onClick={() => handleSend('/projects')}>/projects</Badge>
-                  <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 whitespace-nowrap" onClick={() => handleSend('/experience')}>/experience</Badge>
-                  <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 whitespace-nowrap" onClick={() => handleSend('/skills')}>/skills</Badge>
-                  <Badge variant="default" className="cursor-pointer whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleSend('/contact')}>/contact</Badge>
-                </div>
               </div>
             </Card>
           </motion.div>
