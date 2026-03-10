@@ -6,6 +6,26 @@ import { Badge } from '@/components/ui/badge'
 import { Marquee } from '@/components/ui/marquee'
 import { portfolioContent } from '@/features/portfolio/content'
 import { cn } from '@/lib/utils'
+import authIcon from '@/assets/icons/authentication.svg'
+import cssIcon from '@/assets/icons/css.svg'
+import drizzleIcon from '@/assets/icons/drizzle-orm.svg'
+import expressIcon from '@/assets/icons/express.svg'
+import gitIcon from '@/assets/icons/git.svg'
+import githubIcon from '@/assets/icons/github.svg'
+import htmlIcon from '@/assets/icons/html.svg'
+import javascriptIcon from '@/assets/icons/javascript.svg'
+import laravelIcon from '@/assets/icons/laravel.svg'
+import mysqlIcon from '@/assets/icons/mysql.svg'
+import nextIcon from '@/assets/icons/next.png'
+import nodeIcon from '@/assets/icons/nodejs.svg'
+import postgresqlIcon from '@/assets/icons/postgresql.svg'
+import reactIcon from '@/assets/icons/react.svg'
+import resendIcon from '@/assets/icons/resend.svg'
+import supabaseIcon from '@/assets/icons/supabase.svg'
+import tailwindIcon from '@/assets/icons/tailwind-css.svg'
+import tanstackIcon from '@/assets/icons/React-Query.svg'
+import typescriptIcon from '@/assets/icons/typescript.svg'
+import vueIcon from '@/assets/icons/vuejs.svg'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -46,26 +66,26 @@ const skillStyles: Record<string, string> = {
 }
 
 const skillIcons: Record<string, string> = {
-  'JavaScript': '/src/assets/icons/javascript.svg',
-  'TypeScript': '/src/assets/icons/typescript.svg',
-  'React': '/src/assets/icons/react.svg',
-  'Next.js': '/src/assets/icons/next.png',
-  'Vue.js': '/src/assets/icons/vuejs.svg',
-  'HTML5': '/src/assets/icons/html.svg',
-  'CSS3': '/src/assets/icons/css.svg',
-  'Tailwind CSS': '/src/assets/icons/tailwind-css.svg',
-  'Node.js': '/src/assets/icons/nodejs.svg',
-  'Express.js': '/src/assets/icons/express.svg',
-  'Laravel': '/src/assets/icons/laravel.svg',
-  'PostgreSQL': '/src/assets/icons/postgresql.svg',
-  'MySQL': '/src/assets/icons/mysql.svg',
-  'Supabase': '/src/assets/icons/supabase.svg',
-  'Git': '/src/assets/icons/git.svg',
-  'GitHub': '/src/assets/icons/github.svg',
-  'Drizzle ORM': '/src/assets/icons/drizzle-orm.svg',
-  'Authentication': '/src/assets/icons/authentication.svg',
-  'Resend': '/src/assets/icons/resend.svg',
-  'TanStack Query': '/src/assets/icons/React-Query.svg',
+  'JavaScript': javascriptIcon,
+  'TypeScript': typescriptIcon,
+  'React': reactIcon,
+  'Next.js': nextIcon,
+  'Vue.js': vueIcon,
+  'HTML5': htmlIcon,
+  'CSS3': cssIcon,
+  'Tailwind CSS': tailwindIcon,
+  'Node.js': nodeIcon,
+  'Express.js': expressIcon,
+  'Laravel': laravelIcon,
+  'PostgreSQL': postgresqlIcon,
+  'MySQL': mysqlIcon,
+  'Supabase': supabaseIcon,
+  'Git': gitIcon,
+  'GitHub': githubIcon,
+  'Drizzle ORM': drizzleIcon,
+  'Authentication': authIcon,
+  'Resend': resendIcon,
+  'TanStack Query': tanstackIcon,
 }
 
 export function HomeBento() {
