@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion } from 'framer-motion'
 import { z } from 'zod'
 import { useNavigate } from '@tanstack/react-router'
+import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -20,6 +22,7 @@ type LoginValues = z.infer<typeof loginSchema>
 
 export function AdminLoginView() {
   const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
   const { mutateAsync: signInEmail, isPending } = useAdminSignIn()
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -37,8 +40,8 @@ export function AdminLoginView() {
       })
       navigate({ to: '/admin' })
     } catch (error) {
-      // handle error display as needed
-      console.error(error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign in'
+      form.setError('root', { message: errorMessage })
     }
   }
 
@@ -98,12 +101,22 @@ export function AdminLoginView() {
                   <FieldLabel className="text-sm text-muted-foreground mb-1">Password</FieldLabel>
                   <a href="#" className="text-xs font-medium text-primary/80 hover:underline hover:text-primary transition-colors">Forgot your password?</a>
                 </div>
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  {...form.register('password')}
-                  className="bg-background/60 border-none shadow-none focus:ring-2 focus:ring-primary/60 text-foreground"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Password"
+                    {...form.register('password')}
+                    className="bg-background/60 border-none shadow-none focus:ring-2 focus:ring-primary/60 text-foreground pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 <FieldError errors={form.formState.errors.password ? [{ message: form.formState.errors.password.message }] : []} />
               </Field>
               <FieldError errors={form.formState.errors.root ? [{ message: form.formState.errors.root.message }] : []} />
