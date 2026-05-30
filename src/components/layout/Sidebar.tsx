@@ -30,12 +30,14 @@ export function Sidebar() {
   return (
     <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 overflow-y-auto py-12 md:flex md:flex-col">
       <div className="mb-8 rounded-[2rem] border border-border/60 bg-background/70 p-6 text-center backdrop-blur-md">
-        <motion.div
+        <motion.button
+          type="button"
+          aria-label="Profile avatar"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
           onClick={handleSecretClick}
-          className="cursor-pointer"
+          className="cursor-pointer bg-transparent border-0 p-0"
         >
           <Avatar className="mx-auto size-24 border border-border/60">
             <AvatarImage
@@ -46,7 +48,7 @@ export function Sidebar() {
               NM
             </AvatarFallback>
           </Avatar>
-        </motion.div>
+        </motion.button>
 
         <div className="mt-5 space-y-2">
           <h2 className="flex items-center justify-center gap-1.5 text-xl font-bold tracking-tight text-foreground">

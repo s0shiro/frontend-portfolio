@@ -143,59 +143,57 @@ export function HomeBento() {
         </div>
 
         <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-4 rounded-lg">
+          <TooltipProvider>
           <Marquee pauseOnHover className="[--duration:20s]">
             {firstRow.map((skill) => (
-              <TooltipProvider key={skill}>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <motion.div
-                      whileHover={{ y: -5, scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={cn(
-                        "group flex size-14 sm:size-16 items-center justify-center rounded-full border bg-gradient-to-br shadow-sm transition-all cursor-default mx-2",
-                        skillStyles[skill] || "from-muted/50 to-muted text-foreground border-border/40"
-                      )}
-                    >
-                      <img
-                        src={skillIcons[skill]}
-                        alt={skill}
-                        className="h-8 w-8 sm:h-10 sm:w-10"
-                      />
-                      <span className="sr-only">{skill}</span>
-                    </motion.div>
-                  </TooltipTrigger>
-                  <TooltipContent role="tooltip" aria-live="polite" className="bg-background text-foreground border-border shadow-lg rounded-md p-2 text-sm">{skill}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip key={skill}>
+                <TooltipTrigger>
+                  <motion.div
+                    whileHover={{ y: -5, scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "group flex size-14 sm:size-16 items-center justify-center rounded-full border bg-gradient-to-br shadow-sm transition-all cursor-default mx-2",
+                      skillStyles[skill] || "from-muted/50 to-muted text-foreground border-border/40"
+                    )}
+                  >
+                    <img
+                      src={skillIcons[skill]}
+                      alt={skill}
+                      className="h-8 w-8 sm:h-10 sm:w-10"
+                    />
+                    <span className="sr-only">{skill}</span>
+                  </motion.div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-background text-foreground border-border shadow-lg rounded-md p-2 text-sm">{skill}</TooltipContent>
+              </Tooltip>
             ))}
           </Marquee>
-          
+
           <Marquee pauseOnHover reverse className="[--duration:20s] mt-4">
             {secondRow.map((skill) => (
-              <TooltipProvider key={skill}>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <motion.div
-                      whileHover={{ y: -5, scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={cn(
-                        "group flex size-14 sm:size-16 items-center justify-center rounded-full border bg-gradient-to-br shadow-sm transition-all cursor-default mx-2",
-                        skillStyles[skill] || "from-muted/50 to-muted text-foreground border-border/40"
-                      )}
-                    >
-                      <img
-                        src={skillIcons[skill]}
-                        alt={skill}
-                        className="h-8 w-8 sm:h-10 sm:w-10"
-                      />
-                      <span className="sr-only">{skill}</span>
-                    </motion.div>
-                  </TooltipTrigger>
-                  <TooltipContent role="tooltip" aria-live="polite" className="bg-background text-foreground border-border shadow-lg rounded-md p-2 text-sm">{skill}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip key={skill}>
+                <TooltipTrigger>
+                  <motion.div
+                    whileHover={{ y: -5, scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "group flex size-14 sm:size-16 items-center justify-center rounded-full border bg-gradient-to-br shadow-sm transition-all cursor-default mx-2",
+                      skillStyles[skill] || "from-muted/50 to-muted text-foreground border-border/40"
+                    )}
+                  >
+                    <img
+                      src={skillIcons[skill]}
+                      alt={skill}
+                      className="h-8 w-8 sm:h-10 sm:w-10"
+                    />
+                    <span className="sr-only">{skill}</span>
+                  </motion.div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-background text-foreground border-border shadow-lg rounded-md p-2 text-sm">{skill}</TooltipContent>
+              </Tooltip>
             ))}
           </Marquee>
+          </TooltipProvider>
 
           <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-background dark:from-background"></div>
           <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-background dark:from-background"></div>

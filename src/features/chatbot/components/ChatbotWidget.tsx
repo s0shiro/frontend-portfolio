@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, User, GripHorizontal } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { z } from 'zod';
 import { useChatMutation } from '../api';
 import { TypewriterMessage } from './TypewriterMessage';
 import { Button } from '@/components/ui/button';
@@ -11,33 +12,39 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-interface MessagePayload {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  type: 'command' | 'conversation';
+const messageSchema = z.object({
+  id: z.string(),
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+  type: z.enum(['command', 'conversation']),
+});
+
+const messagesSchema = z.array(messageSchema);
+
+type MessagePayload = z.infer<typeof messageSchema>;
+
+const WELCOME_MESSAGE: MessagePayload = {
+  id: 'welcome',
+  role: 'assistant',
+  content: "Hi! I am Neilven's AI. What would you like to know about my experience, skills, or projects?",
+  type: 'conversation',
+};
+
+function loadCachedMessages(): MessagePayload[] {
+  try {
+    const saved = localStorage.getItem('chat_messages');
+    if (!saved) return [WELCOME_MESSAGE];
+    const parsed = JSON.parse(saved);
+    const result = messagesSchema.safeParse(parsed);
+    return result.success ? result.data : [WELCOME_MESSAGE];
+  } catch {
+    return [WELCOME_MESSAGE];
+  }
 }
 
 export function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<MessagePayload[]>(() => {
-    const savedMessages = localStorage.getItem('chat_messages');
-    if (savedMessages) {
-      try {
-        return JSON.parse(savedMessages);
-      } catch {
-        console.error('Failed to parse cached chat messages');
-      }
-    }
-    return [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: "Hi! I am Neilven's AI. What would you like to know about my experience, skills, or projects?",
-        type: 'conversation',
-      }
-    ];
-  });
+  const [messages, setMessages] = useState<MessagePayload[]>(loadCachedMessages);
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState<string | undefined>(() => {
     return localStorage.getItem('chat_session_id') || undefined;
