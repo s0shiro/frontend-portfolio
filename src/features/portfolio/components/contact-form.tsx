@@ -115,8 +115,9 @@ export function ContactForm() {
 
         <Button
           type="submit"
+          size="lg"
           disabled={mutation.isPending}
-          className="w-full sm:w-auto px-8"
+          className="h-11 w-full rounded-2xl px-8 sm:w-auto"
         >
           {mutation.isPending ? (
             'Sending...'

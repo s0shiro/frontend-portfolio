@@ -25,7 +25,7 @@ const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 )
 
-import avatarImage from '@/assets/images/me.jpeg'
+import avatarImage from '@/assets/images/me.png'
 import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { portfolioContent } from '@/features/portfolio/content'
@@ -54,10 +54,16 @@ export function MobileNav() {
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-border/40 bg-background/60 px-4 backdrop-blur-md md:hidden">
       <Link to="/" className="flex items-center gap-2">
-        <Avatar className="size-8 border border-border/60" onClick={handleSecretClick}>
-          <AvatarImage src={avatarImage} alt={portfolioContent.profile.fullName} />
-          <AvatarFallback>NM</AvatarFallback>
-        </Avatar>
+        <span className="relative">
+          <Avatar className="size-8 border border-border/60" onClick={handleSecretClick}>
+            <AvatarImage src={avatarImage} alt={portfolioContent.profile.fullName} />
+            <AvatarFallback>NM</AvatarFallback>
+          </Avatar>
+          <span className="absolute -bottom-0.5 -right-0.5 flex size-2.5" aria-label="Available for work">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" />
+            <span className="relative inline-flex size-2.5 rounded-full bg-green-500 ring-2 ring-background" />
+          </span>
+        </span>
         <span className="text-sm font-bold tracking-tight">
           {portfolioContent.profile.fullName}
         </span>
@@ -88,6 +94,13 @@ export function MobileNav() {
                 <p className="text-xs text-muted-foreground line-clamp-1">
                   {portfolioContent.profile.headline}
                 </p>
+                <span className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-foreground">
+                  <span className="relative flex size-1.5">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" />
+                    <span className="relative inline-flex size-1.5 rounded-full bg-green-500" />
+                  </span>
+                  Available for work
+                </span>
               </div>
             </div>
           </SheetHeader>

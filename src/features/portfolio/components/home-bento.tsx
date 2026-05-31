@@ -3,10 +3,9 @@ import { motion } from 'framer-motion'
 import { ArrowRight, Code2, Download, Mail } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
-import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Marquee } from '@/components/ui/marquee'
-import avatarImage from '@/assets/images/me.jpeg'
+import heroImage from '@/assets/images/hero.png'
 import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
 import { portfolioContent } from '@/features/portfolio/content'
 import { cn } from '@/lib/utils'
@@ -44,6 +43,39 @@ const containerVariants = {
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
   visible: { opacity: 1, y: 0 },
+}
+
+const headingVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.15 },
+  },
+}
+
+const wordVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+  },
+}
+
+function WashWord({ text, colorClass, delay }: { text: string; colorClass: string; delay: number }) {
+  return (
+    <span className="relative inline-block font-semibold">
+      <span className="text-foreground/90">{text}</span>
+      <motion.span
+        aria-hidden
+        className={cn('absolute inset-0', colorClass)}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.45, delay, ease: 'easeOut' }}
+      >
+        {text}
+      </motion.span>
+    </span>
+  )
 }
 
 const skillStyles: Record<string, string> = {
@@ -93,6 +125,7 @@ const skillIcons: Record<string, string> = {
 }
 
 export function HomeBento() {
+  const headingWords = `Hi, I'm ${portfolioContent.profile.fullName}`.split(' ')
   const allSkills = portfolioContent.skillGroups.flatMap((group) => group.items)
 
   // Filter out skills that do not have corresponding icons
@@ -103,20 +136,19 @@ export function HomeBento() {
 
   return (
     <motion.section
-      className="mx-auto w-full py-8 sm:py-12"
+      className="mx-auto w-full"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
       <motion.div variants={itemVariants} className="space-y-8">
-        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border bg-background/60 p-5 shadow-sm backdrop-blur-md sm:p-8">
-          <div className="grid gap-8 lg:grid-cols-[1fr_220px] lg:items-center">
-            <div className="space-y-7">
-              <div className="flex items-center gap-4 md:hidden">
+        <div className="mx-auto grid max-w-6xl items-center gap-8 overflow-hidden lg:grid-cols-[1.4fr_0.6fr]">
+            <div className="space-y-7 p-6 sm:p-10">
+              <div className="flex items-center gap-4 lg:hidden">
                 <img
-                  src={avatarImage}
+                  src={heroImage}
                   alt={portfolioContent.profile.fullName}
-                  className="size-16 rounded-2xl border border-border/60 object-cover shadow-sm"
+                  className="size-16 rounded-2xl border border-border/60 object-cover object-top shadow-sm"
                 />
                 <div className="space-y-1">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
@@ -130,25 +162,32 @@ export function HomeBento() {
 
               {/* Header Section */}
               <div className="space-y-6">
-                <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-                  Hi, I'm {portfolioContent.profile.fullName}
-                </h1>
-
-                <div className="flex flex-col flex-wrap items-start gap-2 sm:flex-row sm:items-center">
-                  <Badge variant="outline" className="w-fit text-[10px] leading-tight sm:text-sm">Based in {portfolioContent.profile.location}</Badge>
-                  <Badge variant="secondary" className="w-fit text-[10px] leading-tight sm:text-sm">{portfolioContent.profile.availability}</Badge>
-                </div>
+                <motion.h1
+                  className="max-w-md text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+                  variants={headingVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  {headingWords.map((word, i) => (
+                    <motion.span
+                      key={`${word}-${i}`}
+                      variants={wordVariants}
+                      className="me-[0.25em] inline-block"
+                    >
+                      {word}
+                    </motion.span>
+                  ))}
+                </motion.h1>
               </div>
 
-              {/* Text Area */}
-              <div className="max-w-3xl space-y-5 text-base leading-relaxed text-muted-foreground sm:text-lg sm:leading-loose">
-                {portfolioContent.profile.headline ? (
-                  <p>{portfolioContent.profile.headline}</p>
-                ) : null}
-                <p>
-                  {portfolioContent.profile.summary}
-                </p>
-              </div>
+              {/* Tagline */}
+              <blockquote className="max-w-md text-lg font-medium leading-relaxed text-foreground/90 sm:text-xl">
+                Real{' '}
+                <WashWord text="problems." colorClass="text-violet-500 dark:text-violet-400" delay={0.7} />{' '}
+                Maintainable{' '}
+                <WashWord text="solutions." colorClass="text-violet-600 dark:text-violet-300" delay={0.95} />{' '}
+                <WashWord text="Shipped." colorClass="text-violet-700 dark:text-violet-200" delay={1.2} />
+              </blockquote>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
@@ -176,25 +215,23 @@ export function HomeBento() {
               </div>
             </div>
 
-            <div className="relative hidden md:flex lg:justify-end">
-              <div className="absolute inset-4 rounded-[2rem] bg-primary/10 blur-2xl" />
-              <div className="relative rounded-[2rem] border border-border/60 bg-muted/30 p-3 shadow-sm">
-                <img
-                  src={avatarImage}
-                  alt={portfolioContent.profile.fullName}
-                  className="aspect-[4/5] w-48 rounded-[1.5rem] object-cover"
-                />
-              </div>
+            {/* Hero Illustration */}
+            <div className="relative hidden min-h-[30rem] self-stretch lg:block">
+              {/* Single soft glow centered behind the figure */}
+              <div className="pointer-events-none absolute bottom-0 left-1/2 h-3/4 w-3/4 -translate-x-1/2 rounded-full bg-violet-400/20 blur-3xl dark:bg-violet-500/15" />
+
+              {/* Character */}
+              <img
+                src={heroImage}
+                alt={portfolioContent.profile.fullName}
+                className="absolute bottom-0 left-1/2 h-[94%] w-auto max-w-none -translate-x-1/2 object-contain object-bottom"
+              />
             </div>
           </div>
-        </div>
       </motion.div>
 
-      {/* Divider */}
-      <motion.hr variants={itemVariants} className="my-12 border-border/40" />
-
       {/* Skills Section */}
-      <motion.div variants={itemVariants} className="space-y-10">
+      <motion.div variants={itemVariants} className="mt-8 space-y-10">
         <div className="space-y-3">
           <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
             <Code2 className="size-6" /> Skills

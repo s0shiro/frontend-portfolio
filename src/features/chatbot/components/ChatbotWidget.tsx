@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { MessageCircle, X, Send, Bot, User, GripHorizontal } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, GripHorizontal, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { z } from 'zod';
@@ -53,6 +53,7 @@ export function ChatbotWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate: sendMessage, isPending } = useChatMutation();
+  const hasChatHistory = messages.some((message) => message.id !== WELCOME_MESSAGE.id);
 
   useEffect(() => {
     localStorage.setItem('chat_messages', JSON.stringify(messages));
@@ -120,6 +121,15 @@ export function ChatbotWidget() {
     handleSend(input);
   };
 
+  const handleClearMessages = () => {
+    if (isPending) return;
+
+    setMessages([WELCOME_MESSAGE]);
+    setSessionId(undefined);
+    localStorage.removeItem('chat_messages');
+    localStorage.removeItem('chat_session_id');
+  };
+
   const commandVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
@@ -152,9 +162,30 @@ export function ChatbotWidget() {
                     <p className="text-xs text-muted-foreground">Ask about Neilven&apos;s work</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsOpen(false)}>
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  {hasChatHistory && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs"
+                      onClick={handleClearMessages}
+                      disabled={isPending}
+                      aria-label="Clear chat history"
+                    >
+                      <Trash2 className="mr-1 h-3.5 w-3.5" />
+                      Clear
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
+                    onClick={() => setIsOpen(false)}
+                    aria-label="Close chat"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-hidden">
@@ -248,6 +279,7 @@ export function ChatbotWidget() {
           size="icon"
           className="h-14 w-14 rounded-full shadow-xl"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? 'Close chat' : 'Open chat'}
         >
           {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
         </Button>

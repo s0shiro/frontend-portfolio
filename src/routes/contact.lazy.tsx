@@ -11,7 +11,7 @@ export const Route = createLazyFileRoute('/contact')({
 
 function ContactPage() {
   return (
-    <div className="container mx-auto py-12 px-4 max-w-5xl space-y-12">
+    <div className="container mx-auto px-4 max-w-5xl space-y-12">
       <div className="grid gap-6 rounded-3xl border border-border/60 bg-background/60 p-6 shadow-sm backdrop-blur-md md:grid-cols-[1fr_auto] md:items-end md:p-8">
         <div className="space-y-4">
           <p className="text-sm uppercase tracking-[0.28em] text-muted-foreground">Contact</p>

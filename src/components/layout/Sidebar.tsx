@@ -25,7 +25,7 @@ const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 )
 
-import avatarImage from '@/assets/images/me.jpeg'
+import avatarImage from '@/assets/images/me.png'
 import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { portfolioContent } from '@/features/portfolio/content'
@@ -76,6 +76,15 @@ export function Sidebar() {
           <p className="text-sm font-medium text-blue-500/80">
             @{portfolioContent.profile.fullName.toLowerCase().replace(/\s+/g, '')}
           </p>
+          <div className="flex justify-center pt-1">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-green-500" />
+              </span>
+              Available for work
+            </span>
+          </div>
           <p className="text-sm leading-6 text-muted-foreground">
             {portfolioContent.profile.headline}
           </p>
@@ -138,10 +147,21 @@ export function Sidebar() {
           >
             <Link
               to={item.path}
-              className="flex items-center gap-4 rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-border/50 hover:bg-muted/50 hover:text-foreground [&.active]:border-border/60 [&.active]:bg-background/80 [&.active]:text-foreground"
+              className="relative flex items-center gap-4 rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground [&.active]:text-foreground"
             >
-              <item.icon className="size-4" />
-              {item.label}
+              {({ isActive }: { isActive: boolean }) => (
+                <>
+                  {isActive ? (
+                    <motion.span
+                      layoutId="sidebar-active"
+                      className="absolute inset-0 rounded-2xl border border-border/60 bg-background/80"
+                      transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                    />
+                  ) : null}
+                  <item.icon className="relative z-10 size-4" />
+                  <span className="relative z-10">{item.label}</span>
+                </>
+              )}
             </Link>
           </motion.div>
         ))}
