@@ -1,5 +1,6 @@
+import { type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CodeIcon, PaletteIcon } from 'lucide-react'
+import { CodeIcon, PaletteIcon, AlertCircle, BriefcaseIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -63,14 +64,72 @@ function formatExperiences(apiExperiences: ApiExperience[] | undefined): Experie
   return apiItems
 }
 
+function ExperienceSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-background/50 backdrop-blur-md px-4 py-4 animate-pulse space-y-6">
+      {Array.from({ length: 2 }).map((_, i) => (
+        <div key={i} className="space-y-3 py-2">
+          <div className="flex items-center gap-3">
+            <div className="size-2 rounded-full bg-muted" />
+            <div className="h-4 w-40 rounded bg-muted" />
+          </div>
+          <div className="pl-5 space-y-2">
+            <div className="h-3 w-56 rounded bg-muted" />
+            <div className="h-3 w-32 rounded bg-muted" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function AboutTimeline() {
-  const { data: apiExperiences } = useQuery({
+  const { data: apiExperiences, isLoading: isExperiencesLoading, isError: isExperiencesError, refetch } = useQuery({
     queryKey: ['portfolio', 'experiences'],
     queryFn: fetchPublicExperiences,
     staleTime: 1000 * 60 * 5,
   })
 
   const experiences = formatExperiences(apiExperiences)
+
+  let experienceContent: ReactNode
+
+  if (isExperiencesLoading) {
+    experienceContent = <ExperienceSkeleton />
+  } else if (isExperiencesError) {
+    experienceContent = (
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border/60 py-12 text-center">
+        <AlertCircle className="size-6 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">Failed to load experience.</p>
+        <button
+          onClick={() => refetch()}
+          className="text-sm font-medium underline underline-offset-4 hover:text-foreground text-muted-foreground transition-colors"
+        >
+          Try again
+        </button>
+      </div>
+    )
+  } else if (experiences.length === 0) {
+    experienceContent = (
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border/60 py-12 text-center">
+        <BriefcaseIcon className="size-6 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">No experience entries yet.</p>
+      </div>
+    )
+  } else {
+    experienceContent = (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.1 }}
+        transition={{ duration: 0.4 }}
+        className="overflow-hidden rounded-xl border border-border/60 bg-background/50 backdrop-blur-md"
+      >
+        <WorkExperience experiences={experiences} />
+      </motion.div>
+    )
+  }
+
   return (
     <div className="space-y-10">
       <section className="space-y-4">
@@ -89,15 +148,7 @@ export function AboutTimeline() {
           <h2 className="text-2xl font-bold tracking-tighter">What I have shipped so far</h2>
         </div>
         <div className="space-y-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.4 }}
-            className="overflow-hidden rounded-xl border border-border/60 bg-background/50 backdrop-blur-md"
-          >
-            <WorkExperience experiences={experiences} />
-          </motion.div>
+          {experienceContent}
         </div>
       </section>
 

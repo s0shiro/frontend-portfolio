@@ -96,7 +96,7 @@ export function SocialBentoGrid() {
           target="_blank"
           rel="noopener noreferrer"
           variants={itemVariants}
-          whileHover={{ y: -5, scale: 0.98 }}
+          whileHover={{ y: -5, scale: 1.02 }}
           whileTap={{ scale: 0.95 }}
           className={cn(
             "group block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl",

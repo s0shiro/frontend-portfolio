@@ -149,7 +149,7 @@ export function ChatbotWidget() {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold">Portfolio AI</h3>
-                    <p className="text-xs text-muted-foreground">DigitalOcean Serverless</p>
+                    <p className="text-xs text-muted-foreground">Ask about Neilven&apos;s work</p>
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsOpen(false)}>

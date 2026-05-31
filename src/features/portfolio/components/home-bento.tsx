@@ -1,9 +1,13 @@
+import { Link } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
-import { Code2 } from 'lucide-react'
+import { ArrowRight, Code2, Download, Mail } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { Marquee } from '@/components/ui/marquee'
+import avatarImage from '@/assets/images/me.jpg'
+import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
 import { portfolioContent } from '@/features/portfolio/content'
 import { cn } from '@/lib/utils'
 import authIcon from '@/assets/icons/authentication.svg'
@@ -105,27 +109,83 @@ export function HomeBento() {
       variants={containerVariants}
     >
       <motion.div variants={itemVariants} className="space-y-8">
-        <div className="max-w-4xl mx-auto p-4 sm:p-8 rounded-2xl border bg-background/60 backdrop-blur-md shadow-sm">
-          {/* Header Section */}
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-              Hi, I'm {portfolioContent.profile.fullName}
-            </h1>
-            
-            <div className="flex flex-col flex-wrap items-start gap-2 sm:flex-row sm:items-center">
-              <Badge variant="outline" className="w-fit text-[10px] leading-tight sm:text-sm">Based in {portfolioContent.profile.location}</Badge>
-              <Badge variant="secondary" className="w-fit text-[10px] leading-tight sm:text-sm">{portfolioContent.profile.availability}</Badge>
-            </div>
-          </div>
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border bg-background/60 p-5 shadow-sm backdrop-blur-md sm:p-8">
+          <div className="grid gap-8 lg:grid-cols-[1fr_220px] lg:items-center">
+            <div className="space-y-7">
+              <div className="flex items-center gap-4 md:hidden">
+                <img
+                  src={avatarImage}
+                  alt={portfolioContent.profile.fullName}
+                  className="size-16 rounded-2xl border border-border/60 object-cover shadow-sm"
+                />
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                    Portfolio
+                  </p>
+                  <p className="text-sm font-medium text-foreground">
+                    Full-stack developer
+                  </p>
+                </div>
+              </div>
 
-          {/* Text Area */}
-          <div className="mt-8 max-w-3xl space-y-6 text-base leading-relaxed text-muted-foreground sm:text-lg sm:leading-loose">
-            <p>
-              {portfolioContent.profile.headline}
-            </p>
-            <p>
-              {portfolioContent.profile.summary}
-            </p>
+              {/* Header Section */}
+              <div className="space-y-6">
+                <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
+                  Hi, I'm {portfolioContent.profile.fullName}
+                </h1>
+
+                <div className="flex flex-col flex-wrap items-start gap-2 sm:flex-row sm:items-center">
+                  <Badge variant="outline" className="w-fit text-[10px] leading-tight sm:text-sm">Based in {portfolioContent.profile.location}</Badge>
+                  <Badge variant="secondary" className="w-fit text-[10px] leading-tight sm:text-sm">{portfolioContent.profile.availability}</Badge>
+                </div>
+              </div>
+
+              {/* Text Area */}
+              <div className="max-w-3xl space-y-5 text-base leading-relaxed text-muted-foreground sm:text-lg sm:leading-loose">
+                {portfolioContent.profile.headline ? (
+                  <p>{portfolioContent.profile.headline}</p>
+                ) : null}
+                <p>
+                  {portfolioContent.profile.summary}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  to="/projects"
+                  className={cn(buttonVariants({ size: 'lg' }), 'h-11 rounded-2xl px-5')}
+                >
+                  View Projects
+                  <ArrowRight className="size-4" />
+                </Link>
+                <Link
+                  to="/contact"
+                  className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-11 rounded-2xl px-5')}
+                >
+                  Contact Me
+                  <Mail className="size-4" />
+                </Link>
+                <a
+                  href={resumePDF}
+                  download="NEILVEN_MASCARINAS.pdf"
+                  className={cn(buttonVariants({ variant: 'ghost', size: 'lg' }), 'h-11 rounded-2xl px-5')}
+                >
+                  Download CV
+                  <Download className="size-4" />
+                </a>
+              </div>
+            </div>
+
+            <div className="relative hidden md:flex lg:justify-end">
+              <div className="absolute inset-4 rounded-[2rem] bg-primary/10 blur-2xl" />
+              <div className="relative rounded-[2rem] border border-border/60 bg-muted/30 p-3 shadow-sm">
+                <img
+                  src={avatarImage}
+                  alt={portfolioContent.profile.fullName}
+                  className="aspect-[4/5] w-48 rounded-[1.5rem] object-cover"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
