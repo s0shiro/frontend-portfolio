@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { MessageCircle, X, Send, Bot, User, GripHorizontal } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, GripHorizontal, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { z } from 'zod';
 import { useChatMutation } from '../api';
 import { TypewriterMessage } from './TypewriterMessage';
 import { Button } from '@/components/ui/button';
@@ -11,33 +12,39 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-interface MessagePayload {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  type: 'command' | 'conversation';
+const messageSchema = z.object({
+  id: z.string(),
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+  type: z.enum(['command', 'conversation']),
+});
+
+const messagesSchema = z.array(messageSchema);
+
+type MessagePayload = z.infer<typeof messageSchema>;
+
+const WELCOME_MESSAGE: MessagePayload = {
+  id: 'welcome',
+  role: 'assistant',
+  content: "Hi! I am Neilven's AI. What would you like to know about my experience, skills, or projects?",
+  type: 'conversation',
+};
+
+function loadCachedMessages(): MessagePayload[] {
+  try {
+    const saved = localStorage.getItem('chat_messages');
+    if (!saved) return [WELCOME_MESSAGE];
+    const parsed = JSON.parse(saved);
+    const result = messagesSchema.safeParse(parsed);
+    return result.success ? result.data : [WELCOME_MESSAGE];
+  } catch {
+    return [WELCOME_MESSAGE];
+  }
 }
 
 export function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<MessagePayload[]>(() => {
-    const savedMessages = localStorage.getItem('chat_messages');
-    if (savedMessages) {
-      try {
-        return JSON.parse(savedMessages);
-      } catch {
-        console.error('Failed to parse cached chat messages');
-      }
-    }
-    return [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: "Hi! I am Neilven's AI. What would you like to know about my experience, skills, or projects?",
-        type: 'conversation',
-      }
-    ];
-  });
+  const [messages, setMessages] = useState<MessagePayload[]>(loadCachedMessages);
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState<string | undefined>(() => {
     return localStorage.getItem('chat_session_id') || undefined;
@@ -46,6 +53,7 @@ export function ChatbotWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate: sendMessage, isPending } = useChatMutation();
+  const hasChatHistory = messages.some((message) => message.id !== WELCOME_MESSAGE.id);
 
   useEffect(() => {
     localStorage.setItem('chat_messages', JSON.stringify(messages));
@@ -113,6 +121,15 @@ export function ChatbotWidget() {
     handleSend(input);
   };
 
+  const handleClearMessages = () => {
+    if (isPending) return;
+
+    setMessages([WELCOME_MESSAGE]);
+    setSessionId(undefined);
+    localStorage.removeItem('chat_messages');
+    localStorage.removeItem('chat_session_id');
+  };
+
   const commandVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
@@ -142,12 +159,33 @@ export function ChatbotWidget() {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold">Portfolio AI</h3>
-                    <p className="text-xs text-muted-foreground">DigitalOcean Serverless</p>
+                    <p className="text-xs text-muted-foreground">Ask about Neilven&apos;s work</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsOpen(false)}>
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  {hasChatHistory && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs"
+                      onClick={handleClearMessages}
+                      disabled={isPending}
+                      aria-label="Clear chat history"
+                    >
+                      <Trash2 className="mr-1 h-3.5 w-3.5" />
+                      Clear
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
+                    onClick={() => setIsOpen(false)}
+                    aria-label="Close chat"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-hidden">
@@ -241,6 +279,7 @@ export function ChatbotWidget() {
           size="icon"
           className="h-14 w-14 rounded-full shadow-xl"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? 'Close chat' : 'Open chat'}
         >
           {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
         </Button>

@@ -67,10 +67,10 @@ export function ContactForm() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel className="sr-only">Name</FieldLabel>
-                <Input 
-                  {...field} 
-                  placeholder="Name" 
+                <FieldLabel className="text-sm font-medium text-foreground">Name</FieldLabel>
+                <Input
+                  {...field}
+                  placeholder="Your name"
                   className="h-12 bg-background/50 backdrop-blur-sm border-border/40 focus:border-primary/40 focus:ring-primary/20 text-base"
                 />
                 <FieldError errors={fieldState.error ? [{ message: fieldState.error.message }] : []} />
@@ -83,11 +83,11 @@ export function ContactForm() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel className="sr-only">Email</FieldLabel>
-                <Input 
-                  {...field} 
-                  type="email" 
-                  placeholder="Email" 
+                <FieldLabel className="text-sm font-medium text-foreground">Email</FieldLabel>
+                <Input
+                  {...field}
+                  type="email"
+                  placeholder="you@example.com"
                   className="h-12 bg-background/50 backdrop-blur-sm border-border/40 focus:border-primary/40 focus:ring-primary/20 text-base"
                 />
                 <FieldError errors={fieldState.error ? [{ message: fieldState.error.message }] : []} />
@@ -101,10 +101,10 @@ export function ContactForm() {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel className="sr-only">Message</FieldLabel>
-              <Textarea 
-                {...field} 
-                placeholder="Message" 
+              <FieldLabel className="text-sm font-medium text-foreground">Message</FieldLabel>
+              <Textarea
+                {...field}
+                placeholder="Tell me about the role, project, or collaboration you have in mind."
                 rows={5}
                 className="bg-background/50 backdrop-blur-sm border-border/40 focus:border-primary/40 focus:ring-primary/20 resize-none text-base p-4"
               />
@@ -113,10 +113,11 @@ export function ContactForm() {
           )}
         />
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
+          size="lg"
           disabled={mutation.isPending}
-          className="w-full sm:w-auto px-8"
+          className="h-11 w-full rounded-2xl px-8 sm:w-auto"
         >
           {mutation.isPending ? (
             'Sending...'

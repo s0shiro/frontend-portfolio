@@ -18,6 +18,7 @@ export function AdminApiKeysView() {
   const [newKeyName, setNewKeyName] = useState('')
   const [createdKey, setCreatedKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [revokeTargetId, setRevokeTargetId] = useState<string | null>(null)
 
   const handleCreate = async () => {
     if (!newKeyName.trim()) return
@@ -164,12 +165,9 @@ export function AdminApiKeysView() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="Revoke API key"
                     className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to revoke this key?')) {
-                        deleteApiKey.mutate(apiKey.id)
-                      }
-                    }}
+                    onClick={() => setRevokeTargetId(apiKey.id)}
                     disabled={deleteApiKey.isPending}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -180,6 +178,31 @@ export function AdminApiKeysView() {
           ))
         )}
       </div>
+
+      <Dialog open={revokeTargetId !== null} onOpenChange={(open) => !open && setRevokeTargetId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Revoke API Key</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. The key will be permanently revoked and any integrations using it will stop working.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRevokeTargetId(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (revokeTargetId) {
+                  deleteApiKey.mutate(revokeTargetId)
+                  setRevokeTargetId(null)
+                }
+              }}
+            >
+              Revoke Key
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
