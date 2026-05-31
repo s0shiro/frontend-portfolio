@@ -25,7 +25,7 @@ const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 )
 
-import avatarImage from '@/assets/images/me.jpg'
+import avatarImage from '@/assets/images/me.jpeg'
 import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { portfolioContent } from '@/features/portfolio/content'

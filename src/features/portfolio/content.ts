@@ -3,7 +3,7 @@ import type { PortfolioContent } from '@/features/portfolio/types'
 export const portfolioContent: PortfolioContent = {
   profile: {
     fullName: 'Neilven Mascariñas',
-    headline: '',
+    headline: 'Full-stack developer building tools that support real operations.',
     summary:
       'I focus on shipping useful products that simplify real workflows, from government crop monitoring tools to booking and asset management systems. My work combines frontend clarity, backend structure, and a strong bias toward maintainable implementation.',
     availability: 'Open to junior full-stack and frontend opportunities',

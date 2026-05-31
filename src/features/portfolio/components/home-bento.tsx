@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Marquee } from '@/components/ui/marquee'
-import avatarImage from '@/assets/images/me.jpg'
+import avatarImage from '@/assets/images/me.jpeg'
 import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
 import { portfolioContent } from '@/features/portfolio/content'
 import { cn } from '@/lib/utils'
