@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { BriefcaseBusiness, GripVertical, Plus, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { AdminEmptyState, AdminLoadingState, AdminPageHeader } from '@/features/admin/components/admin-page'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -95,31 +96,23 @@ export function AdminExperiencesView() {
 
   return (
     <div className="space-y-8">
-      <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Experiences</p>
-          <h1 className="text-4xl font-bold tracking-tighter">Shape the timeline</h1>
-          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            Maintain experience entries, chronology, and narrative summaries for the about page timeline.
-          </p>
-        </div>
-        <Button type="button" onClick={openCreate}>
-          <Plus className="size-4" />
-          New experience
-        </Button>
-      </section>
+      <AdminPageHeader
+        eyebrow="Experiences"
+        title="Shape the timeline"
+        description="Maintain experience entries, chronology, and narrative summaries for the about page timeline."
+        action={(
+          <Button type="button" onClick={openCreate}>
+            <Plus className="size-4" />
+            New experience
+          </Button>
+        )}
+      />
 
       <div className="grid gap-4">
         {isLoading ? (
-          <Card className="border-border/60 bg-background/70 backdrop-blur-md">
-            <CardContent className="py-8 text-sm text-muted-foreground">Loading experiences...</CardContent>
-          </Card>
+          <AdminLoadingState description="Loading experiences..." />
         ) : experiences.length === 0 ? (
-          <Card className="border-border/60 bg-background/70 backdrop-blur-md">
-            <CardContent className="py-8 text-sm text-muted-foreground">
-              No experiences yet. Click &ldquo;New experience&rdquo; to get started.
-            </CardContent>
-          </Card>
+          <AdminEmptyState icon={BriefcaseBusiness} title="No experiences yet" description="Click New experience to add a timeline entry." />
         ) : (
           experiences.map((exp, index) => (
             <motion.div

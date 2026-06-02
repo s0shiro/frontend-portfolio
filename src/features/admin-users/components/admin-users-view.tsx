@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Shield, Users, UserX, UserCheck, Play } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+
 import { Badge } from '@/components/ui/badge'
-import { useAdminUsers } from '../hooks/use-admin-users'
-import { useImpersonate } from '../hooks/use-impersonate'
-import { useBanState } from '../hooks/use-ban-state'
-import { BanUserDialog } from './ban-user-dialog'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { AdminEmptyState, AdminErrorState, AdminLoadingState, AdminPageHeader } from '@/features/admin/components/admin-page'
 import { useAdminSession } from '@/features/admin-auth'
 import type { AppRole } from '@/features/admin-auth'
+import { useAdminUsers } from '../hooks/use-admin-users'
+import { useBanState } from '../hooks/use-ban-state'
+import { useImpersonate } from '../hooks/use-impersonate'
+import { BanUserDialog } from './ban-user-dialog'
 import type { AdminUser } from '../types'
 
 const roleOptions: AppRole[] = ['admin', 'editor']
@@ -36,114 +39,192 @@ export function AdminUsersView() {
 
   return (
     <div className="space-y-8">
-      <section className="space-y-2">
-        <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Users</p>
-        <h1 className="text-4xl font-bold tracking-tighter">Manage access levels</h1>
-        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-          Promote or restrict access to portfolio administration based on editor and admin roles.
-        </p>
-      </section>
+      <AdminPageHeader
+        eyebrow="Users"
+        title="Manage access levels"
+        description="Promote, restrict, impersonate, or ban users based on portfolio administration roles."
+      />
 
-      {error ? (
-        <Card className="border-destructive/30 bg-destructive/5">
-          <CardContent className="py-6 text-sm text-destructive">{error}</CardContent>
-        </Card>
-      ) : null}
+      {error ? <AdminErrorState description={error} /> : null}
 
-      <div className="grid gap-4">
-        {isLoading
-          ? Array.from({ length: 3 }).map((_, index) => (
-              <Card key={index} className="border-border/60 bg-background/70 backdrop-blur-md">
-                <CardContent className="py-8 text-sm text-muted-foreground">Loading users...</CardContent>
-              </Card>
-            ))
-          : users.map((user, index) => (
-              <motion.div
-                key={user.id}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: index * 0.04 }}
-              >
-                <Card className="border-border/60 bg-background/70 backdrop-blur-md">
-                  <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="flex items-center gap-2 text-xl tracking-tight">
-                        <Users className="size-4" />
-                        {user.name}
-                        {user.banned && (
-                          <Badge variant="destructive" className="ml-2 uppercase text-[10px]">
-                            Banned
-                          </Badge>
+      {isLoading ? (
+        <AdminLoadingState description="Loading users..." />
+      ) : users.length === 0 ? (
+        <AdminEmptyState icon={Users} title="No users found" description="Users with admin access will appear here." />
+      ) : (
+        <Card className="border-border/60 bg-background/70 backdrop-blur-md">
+          <CardContent className="p-0">
+            <div className="hidden lg:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Role actions</TableHead>
+                    <TableHead className="text-right">Access actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user, index) => (
+                    <motion.tr
+                      key={user.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, delay: index * 0.04 }}
+                      className="border-b transition-colors hover:bg-muted/40 last:border-0"
+                    >
+                      <TableCell>
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground">{user.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                          {user.banned && user.banReason ? (
+                            <p className="mt-1 text-xs text-destructive/80">Reason: {user.banReason}</p>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="uppercase">
+                          <Shield className="size-3 mr-1" />
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {user.banned ? (
+                          <Badge variant="destructive" className="uppercase">Banned</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="uppercase">Active</Badge>
                         )}
-                      </CardTitle>
-                      <CardDescription>{user.email}</CardDescription>
-                      {user.banned && user.banReason && (
-                        <p className="text-xs text-destructive/80">Reason: {user.banReason}</p>
-                      )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          {roleOptions.map((roleOption) => (
+                            <Button
+                              key={roleOption}
+                              type="button"
+                              size="sm"
+                              variant={user.role === roleOption ? 'default' : 'outline'}
+                              disabled={isPending}
+                              onClick={() => changeRole(user.id, roleOption)}
+                            >
+                              {roleOption}
+                            </Button>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {currentUserId !== user.id ? (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              disabled={isImpersonating}
+                              onClick={() => impersonate(user.id)}
+                            >
+                              <Play className="size-4" />
+                              Impersonate
+                            </Button>
+
+                            {user.banned ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
+                                disabled={isUnbanning}
+                                onClick={() => unbanUser(user.id)}
+                              >
+                                <UserCheck className="size-4" />
+                                Unban
+                              </Button>
+                            ) : (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => setBanningUser(user)}
+                              >
+                                <UserX className="size-4" />
+                                Ban
+                              </Button>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="block text-right text-xs text-muted-foreground">Current user</span>
+                        )}
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="divide-y divide-border/50 lg:hidden">
+              {users.map((user, index) => (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, delay: index * 0.04 }}
+                  className="space-y-4 p-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-lg font-semibold tracking-tight text-foreground">{user.name}</p>
+                      {user.banned ? <Badge variant="destructive" className="uppercase text-[10px]">Banned</Badge> : null}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="w-fit uppercase">
-                        <Shield className="size-3 mr-1" />
-                        {user.role}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex flex-wrap gap-3 items-center">
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    {user.banned && user.banReason ? (
+                      <p className="text-xs text-destructive/80">Reason: {user.banReason}</p>
+                    ) : null}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="uppercase">
+                      <Shield className="size-3 mr-1" />
+                      {user.role}
+                    </Badge>
                     {roleOptions.map((roleOption) => (
                       <Button
                         key={roleOption}
                         type="button"
+                        size="sm"
                         variant={user.role === roleOption ? 'default' : 'outline'}
                         disabled={isPending}
                         onClick={() => changeRole(user.id, roleOption)}
                       >
-                        Set as {roleOption}
+                        Set {roleOption}
                       </Button>
                     ))}
-                    
-                    <div className="flex-1" />
+                  </div>
 
-                    {currentUserId !== user.id && (
-                      <>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          disabled={isImpersonating}
-                          onClick={() => impersonate(user.id)}
-                        >
-                          <Play className="size-4 mr-2" />
-                          Impersonate
+                  {currentUserId !== user.id ? (
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" size="sm" variant="secondary" disabled={isImpersonating} onClick={() => impersonate(user.id)}>
+                        <Play className="size-4" />
+                        Impersonate
+                      </Button>
+                      {user.banned ? (
+                        <Button type="button" size="sm" variant="outline" className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10" disabled={isUnbanning} onClick={() => unbanUser(user.id)}>
+                          <UserCheck className="size-4" />
+                          Unban
                         </Button>
-
-                        {user.banned ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
-                            disabled={isUnbanning}
-                            onClick={() => unbanUser(user.id)}
-                          >
-                            <UserCheck className="size-4 mr-2" />
-                            Unban
-                          </Button>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => setBanningUser(user)}
-                          >
-                            <UserX className="size-4 mr-2" />
-                            Ban
-                          </Button>
-                        )}
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-      </div>
+                      ) : (
+                        <Button type="button" size="sm" variant="outline" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setBanningUser(user)}>
+                          <UserX className="size-4" />
+                          Ban
+                        </Button>
+                      )}
+                    </div>
+                  ) : null}
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <BanUserDialog
         isOpen={banningUser !== null}

@@ -24,7 +24,7 @@ function RootLayout() {
       <ThemeProvider>
         <Outlet />
         <TanStackRouterDevtools position="bottom-right" />
-        <Toaster richColors closeButton position="bottom-right" />
+        <Toaster richColors closeButton position="top-center" />
       </ThemeProvider>
     )
   }
@@ -52,7 +52,7 @@ function RootLayout() {
         </div>
         <ChatbotWidget />
         <TanStackRouterDevtools position="bottom-right" />
-        <Toaster richColors closeButton position="bottom-right" />
+        <Toaster richColors closeButton position="top-center" />
       </div>
     </ThemeProvider>
   )

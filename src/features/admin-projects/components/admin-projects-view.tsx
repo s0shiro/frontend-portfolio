@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FolderKanban, GripVertical, Plus, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { AdminEmptyState, AdminLoadingState, AdminPageHeader } from '@/features/admin/components/admin-page'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -89,25 +90,23 @@ export function AdminProjectsView() {
 
   return (
     <div className="space-y-8">
-      <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Projects</p>
-          <h1 className="text-4xl font-bold tracking-tighter">Curate project content</h1>
-          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            Manage featured work, descriptions, tags, and ordering for the public portfolio pages.
-          </p>
-        </div>
-        <Button type="button" onClick={openCreate}>
-          <Plus className="size-4" />
-          New project
-        </Button>
-      </section>
+      <AdminPageHeader
+        eyebrow="Projects"
+        title="Curate project content"
+        description="Manage featured work, descriptions, tags, and ordering for the public portfolio pages."
+        action={(
+          <Button type="button" onClick={openCreate}>
+            <Plus className="size-4" />
+            New project
+          </Button>
+        )}
+      />
 
       <div className="grid gap-4">
         {isLoading
-          ? <Card className="border-border/60 bg-background/70 backdrop-blur-md"><CardContent className="py-8 text-sm text-muted-foreground">Loading projects...</CardContent></Card>
+          ? <AdminLoadingState description="Loading projects..." />
           : projects.length === 0
-            ? <Card className="border-border/60 bg-background/70 backdrop-blur-md"><CardContent className="py-8 text-sm text-muted-foreground">No projects yet. Click "New project" to get started.</CardContent></Card>
+            ? <AdminEmptyState icon={FolderKanban} title="No projects yet" description="Click New project to start building the portfolio list." />
             : projects.map((project, index) => (
               <motion.div
                 key={project.id}

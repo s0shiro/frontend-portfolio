@@ -14,6 +14,13 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
 import type { AdminExperienceFormValues } from '../types'
 import type { Experience } from '@/features/admin/types'
 
@@ -130,15 +137,25 @@ export function ExperienceFormDialog({
             render={({ field }) => (
               <Field>
                 <FieldLabel>Employment Type</FieldLabel>
-                <select
-                  {...field}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                <Select
+                  value={field.value ?? ''}
+                  onValueChange={(value) => field.onChange(value ?? '')}
+                  name={field.name}
                 >
-                  <option value="">Select type...</option>
-                  {EMPLOYMENT_TYPES.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    onBlur={field.onBlur}
+                    className={field.value ? undefined : 'text-muted-foreground'}
+                  >
+                    <SelectValue placeholder="Select type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EMPLOYMENT_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             )}
           />

@@ -1,17 +1,14 @@
+import type { ElementType } from "react";
 import { motion } from "framer-motion";
-import { startTransition } from "react";
-import { useNavigate, Link } from "@tanstack/react-router";
-import { LogOut, FolderOpen, Mail, Briefcase, MailOpen, ArrowRight, ChevronRight, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
+import { FolderOpen, Mail, Briefcase, MailOpen, ArrowRight, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { signOut } from "@/features/auth/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useAdminProjects } from "@/features/admin-projects/hooks/use-admin-projects";
 import { useAdminMessages } from "@/features/admin-messages/hooks/use-admin-messages";
 import { useAdminExperiences } from "@/features/admin-experiences/hooks/use-admin-experiences";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { AdminPageHeader } from "./admin-page";
 
 const container = {
   hidden: { opacity: 0 },
@@ -26,29 +23,32 @@ const item = {
 type StatCardProps = {
   label: string;
   value: number;
-  icon: React.ElementType;
+  icon: ElementType;
   accent: string;
   iconBg: string;
   description: string;
+  to: string;
 };
 
-function StatCard({ label, value, icon: Icon, accent, iconBg, description }: StatCardProps) {
+function StatCard({ label, value, icon: Icon, accent, iconBg, description, to }: StatCardProps) {
   return (
     <motion.div variants={item} whileHover={{ y: -4 }} className="col-span-12 sm:col-span-6 lg:col-span-3">
-      <Card className="h-full bg-background/60 backdrop-blur-md border-border/60 ring-0">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{label}</span>
-            <span className={cn("flex size-8 items-center justify-center rounded-lg", iconBg)}>
-              <Icon className={cn("size-4", accent)} />
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <p className="text-4xl font-bold tracking-tighter text-foreground">{value}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-        </CardContent>
-      </Card>
+      <Link to={to as never} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-xl">
+        <Card className="h-full bg-background/60 backdrop-blur-md border-border/60 ring-0 transition-colors hover:bg-muted/25">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{label}</span>
+              <span className={cn("flex size-8 items-center justify-center rounded-lg", iconBg)}>
+                <Icon className={cn("size-4", accent)} />
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <p className="text-4xl font-bold tracking-tighter text-foreground">{value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+          </CardContent>
+        </Card>
+      </Link>
     </motion.div>
   );
 }
@@ -57,24 +57,6 @@ export function AdminDashboard() {
   const { projects } = useAdminProjects();
   const { messages } = useAdminMessages();
   const { experiences } = useAdminExperiences();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await signOut();
-    },
-    onSuccess: () => {
-      queryClient.clear();
-      startTransition(() => {
-        void navigate({ to: "/admin/login" as never });
-      });
-    },
-  });
-
-  function handleLogout() {
-    logoutMutation.mutate();
-  }
 
   const unread = messages.filter((m) => !m.isRead);
   const recentMessages = [...messages]
@@ -82,10 +64,10 @@ export function AdminDashboard() {
     .slice(0, 5);
 
   const stats: StatCardProps[] = [
-    { label: "Projects", value: projects.length, icon: FolderOpen, accent: "text-blue-500", iconBg: "bg-blue-500/10", description: "Portfolio items published" },
-    { label: "Experiences", value: experiences.length, icon: Briefcase, accent: "text-violet-500", iconBg: "bg-violet-500/10", description: "Resume entries" },
-    { label: "Unread", value: unread.length, icon: Mail, accent: "text-amber-500", iconBg: "bg-amber-500/10", description: "Messages awaiting reply" },
-    { label: "Total Messages", value: messages.length, icon: MailOpen, accent: "text-emerald-500", iconBg: "bg-emerald-500/10", description: "All contact submissions" },
+    { label: "Projects", value: projects.length, icon: FolderOpen, accent: "text-blue-500", iconBg: "bg-blue-500/10", description: "Portfolio items published", to: "/admin/projects" },
+    { label: "Experiences", value: experiences.length, icon: Briefcase, accent: "text-violet-500", iconBg: "bg-violet-500/10", description: "Resume entries", to: "/admin/experiences" },
+    { label: "Unread", value: unread.length, icon: Mail, accent: "text-amber-500", iconBg: "bg-amber-500/10", description: "Messages awaiting reply", to: "/admin/messages" },
+    { label: "Total Messages", value: messages.length, icon: MailOpen, accent: "text-emerald-500", iconBg: "bg-emerald-500/10", description: "All contact submissions", to: "/admin/messages" },
   ];
 
   const quickActions = [
@@ -99,37 +81,23 @@ export function AdminDashboard() {
       variants={container}
       initial="hidden"
       animate="show"
+      className="space-y-8"
     >
-      {/* Header */}
-      <motion.div variants={item} className="mb-10 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Welcome back</p>
-          <h1 className="mt-1 text-4xl font-bold tracking-tighter text-foreground">Admin Dashboard</h1>
-        </div>
-        <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }}>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-            className="gap-2 border-border/60 bg-background/60 backdrop-blur-md hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
-          >
-            {logoutMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
-            {logoutMutation.isPending ? "Logging out..." : "Logout"}
-          </Button>
-        </motion.div>
+      <motion.div variants={item}>
+        <AdminPageHeader
+          eyebrow="Welcome back"
+          title="Admin Dashboard"
+          description="Review portfolio health, unread messages, and quick links to the content that needs attention."
+        />
       </motion.div>
 
-      {/* Stats Row */}
-      <div className="mb-6 grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-12 gap-4">
         {stats.map((s) => (
           <StatCard key={s.label} {...s} />
         ))}
       </div>
 
-      {/* Main Grid */}
       <div className="grid grid-cols-12 gap-4">
-        {/* Recent Messages */}
         <motion.div variants={item} className="col-span-12 lg:col-span-8">
           <Card className="h-full bg-background/60 backdrop-blur-md border-border/60 ring-0">
             <CardHeader className="border-b border-border/40 pb-4">
@@ -140,7 +108,7 @@ export function AdminDashboard() {
                 </div>
                 <Link
                   to="/admin/messages"
-                  className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-sm"
                 >
                   View all <ArrowRight className="size-3" />
                 </Link>
@@ -157,25 +125,26 @@ export function AdminDashboard() {
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.3 + i * 0.06 }}
-                      className="flex items-start gap-4 px-4 py-3.5 transition-colors hover:bg-muted/30"
                     >
-                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted/60 text-xs font-bold uppercase text-foreground">
-                        {msg.name.charAt(0)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-foreground">{msg.name}</span>
-                          {!msg.isRead && (
-                            <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-amber-500/15 text-amber-500 border-amber-500/20">
-                              New
-                            </Badge>
-                          )}
+                      <Link to="/admin/messages" className="flex items-start gap-4 px-4 py-3.5 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted/60 text-xs font-bold uppercase text-foreground">
+                          {msg.name.charAt(0)}
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{msg.body}</p>
-                      </div>
-                      <span className="shrink-0 text-[10px] text-muted-foreground/60">
-                        {new Date(msg.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                      </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-foreground">{msg.name}</span>
+                            {!msg.isRead && (
+                              <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-amber-500/15 text-amber-500 border-amber-500/20">
+                                New
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">{msg.body}</p>
+                        </div>
+                        <span className="shrink-0 text-[10px] text-muted-foreground/60">
+                          {new Date(msg.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                        </span>
+                      </Link>
                     </motion.li>
                   ))}
                 </ul>
@@ -184,9 +153,7 @@ export function AdminDashboard() {
           </Card>
         </motion.div>
 
-        {/* Sidebar */}
         <div className="col-span-12 flex flex-col gap-4 lg:col-span-4">
-          {/* Quick Actions */}
           <motion.div variants={item}>
             <Card className="bg-background/60 backdrop-blur-md border-border/60 ring-0">
               <CardHeader className="border-b border-border/40 pb-4">
@@ -198,7 +165,7 @@ export function AdminDashboard() {
                   <motion.div key={label} whileHover={{ x: 4 }} whileTap={{ scale: 0.97 }}>
                     <Link
                       to={to as never}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                     >
                       <Icon className={cn("size-4", accent)} />
                       {label}
@@ -210,10 +177,9 @@ export function AdminDashboard() {
             </Card>
           </motion.div>
 
-          {/* Unread alert */}
           {unread.length > 0 && (
             <motion.div variants={item} whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }}>
-              <Link to="/admin/messages" className="block">
+              <Link to="/admin/messages" className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-xl">
                 <Card className="border-amber-500/20 bg-amber-500/5 ring-0 backdrop-blur-md">
                   <CardContent className="flex items-center gap-4 py-4">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-500">

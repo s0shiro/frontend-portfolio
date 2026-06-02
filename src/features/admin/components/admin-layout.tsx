@@ -1,4 +1,6 @@
-import { Link, Outlet, useMatchRoute } from "@tanstack/react-router";
+import { startTransition, useState } from "react";
+import { Link, Outlet, useMatchRoute, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -11,8 +13,10 @@ import {
   Menu,
   X,
   Play,
+  LogOut,
+  Loader2,
+  UserCircle,
 } from "lucide-react";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -20,6 +24,7 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { useAdminSession } from "@/features/admin-auth";
 import { useImpersonate } from "@/features/admin-users/hooks/use-impersonate";
+import { signOut } from "@/features/auth/lib/auth-client";
 
 const adminNavItems = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -30,16 +35,83 @@ const adminNavItems = [
   { path: "/admin/apikeys", label: "API Keys", icon: Key },
 ] as const;
 
+type AdminAccountFooterProps = {
+  userName?: string | null;
+  userEmail?: string | null;
+  onNavigate?: () => void;
+  onLogout: () => void;
+  isLoggingOut: boolean;
+};
+
+function AdminAccountFooter({ userName, userEmail, onNavigate, onLogout, isLoggingOut }: AdminAccountFooterProps) {
+  const displayName = userName || "Admin";
+
+  return (
+    <div className="space-y-3 border-t border-border/40 p-4">
+      <div className="rounded-2xl border border-border/50 bg-background/70 p-3 shadow-sm backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <UserCircle className="size-5" aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
+            {userEmail ? <p className="truncate text-xs text-muted-foreground">{userEmail}</p> : null}
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onLogout}
+          disabled={isLoggingOut}
+          className="mt-3 w-full justify-center gap-2 border-border/60 bg-background/60 hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+        >
+          {isLoggingOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
+          {isLoggingOut ? "Logging out..." : "Logout"}
+        </Button>
+      </div>
+
+      <ThemeToggle />
+      <Link
+        to="/"
+        onClick={onNavigate}
+        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      >
+        <ArrowLeft className="size-3.5" />
+        Back to Portfolio
+      </Link>
+    </div>
+  );
+}
+
 export function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const matchRoute = useMatchRoute();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: sessionData } = useAdminSession();
   const { stopImpersonating, isStopping } = useImpersonate();
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      await signOut();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      startTransition(() => {
+        void navigate({ to: "/admin/login" as never });
+      });
+    },
+  });
 
   const isImpersonating = !!sessionData?.session?.impersonatedBy;
 
   const handleStopImpersonating = () => {
     stopImpersonating();
+  };
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   return (
@@ -67,7 +139,7 @@ export function AdminLayout() {
 
       <div className="flex flex-1">
         {/* Desktop Sidebar */}
-        <aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-border/40 bg-background/70 backdrop-blur-md md:flex">
+        <aside className="sticky top-0 hidden h-screen w-[256px] shrink-0 flex-col border-r border-border/40 bg-background/70 backdrop-blur-md md:flex">
           <div className="flex h-14 items-center gap-2 border-b border-border/40 px-5">
             <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
               <LayoutDashboard className="size-3.5 text-primary" />
@@ -79,8 +151,8 @@ export function AdminLayout() {
 
           <nav className="flex-1 space-y-1 p-3">
             {adminNavItems.map((item, i) => {
-            const isExact = 'exact' in item ? item.exact : false
-            const isActive = isExact
+              const isExact = "exact" in item ? item.exact : false;
+              const isActive = isExact
                 ? matchRoute({ to: item.path, fuzzy: false })
                 : matchRoute({ to: item.path });
 
@@ -94,7 +166,7 @@ export function AdminLayout() {
                   <Link
                     to={item.path}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
@@ -108,16 +180,12 @@ export function AdminLayout() {
             })}
           </nav>
 
-          <div className="space-y-3 border-t border-border/40 p-4">
-            <ThemeToggle />
-            <Link
-              to="/"
-              className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <ArrowLeft className="size-3.5" />
-              Back to Portfolio
-            </Link>
-          </div>
+          <AdminAccountFooter
+            userName={sessionData?.user?.name}
+            userEmail={sessionData?.user?.email}
+            onLogout={handleLogout}
+            isLoggingOut={logoutMutation.isPending}
+          />
         </aside>
 
         {/* Mobile Header */}
@@ -149,12 +217,12 @@ export function AdminLayout() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -240 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-y-0 left-0 z-40 w-[240px] border-r border-border/40 bg-background/95 pt-14 backdrop-blur-xl md:hidden"
+            className="fixed inset-y-0 left-0 z-40 flex w-[280px] flex-col border-r border-border/40 bg-background/95 pt-14 backdrop-blur-xl md:hidden"
           >
-            <nav className="space-y-1 p-3">
+            <nav className="flex-1 space-y-1 p-3">
               {adminNavItems.map((item) => {
-              const isExact = 'exact' in item ? item.exact : false
-              const isActive = isExact
+                const isExact = "exact" in item ? item.exact : false;
+                const isActive = isExact
                   ? matchRoute({ to: item.path, fuzzy: false })
                   : matchRoute({ to: item.path });
 
@@ -164,7 +232,7 @@ export function AdminLayout() {
                     to={item.path}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
@@ -179,17 +247,13 @@ export function AdminLayout() {
 
             <Separator className="mx-3" />
 
-            <div className="space-y-3 p-4">
-              <ThemeToggle />
-              <Link
-                to="/"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ArrowLeft className="size-3.5" />
-                Back to Portfolio
-              </Link>
-            </div>
+            <AdminAccountFooter
+              userName={sessionData?.user?.name}
+              userEmail={sessionData?.user?.email}
+              onNavigate={() => setMobileOpen(false)}
+              onLogout={handleLogout}
+              isLoggingOut={logoutMutation.isPending}
+            />
           </motion.div>
         )}
 
