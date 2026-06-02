@@ -5,7 +5,7 @@ export const portfolioContent: PortfolioContent = {
     fullName: 'Neilven Mascariñas',
     headline: 'Full-stack developer building tools that support real operations.',
     summary:
-      'I focus on shipping useful products that simplify real workflows, from government crop monitoring tools to booking and asset management systems. My work combines frontend clarity, backend structure, and a strong bias toward maintainable implementation.',
+      'I build tools that simplify real workflows. Clean frontends, solid backends, maintainable code.',
     availability: 'Open to junior full-stack and frontend opportunities',
     location: 'Marinduque, Philippines',
     email: 'mascarinas022@gmail.com',
