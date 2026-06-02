@@ -60,11 +60,10 @@ export function ProjectsGrid() {
     <section className="space-y-4">
       <p className="text-sm uppercase tracking-[0.28em] text-muted-foreground">Projects</p>
       <h1 className="max-w-3xl text-4xl font-bold tracking-tighter sm:text-5xl">
-        Selected work across monitoring, booking, and operational tooling.
+        Selected work.
       </h1>
       <p className="max-w-3xl text-base leading-7 text-muted-foreground">
-        These projects reflect the kind of software I enjoy building most: systems with clear business use,
-        multi-role workflows, and a direct impact on everyday operations.
+        Systems with clear business use, multi-role workflows, and real operational impact.
       </p>
     </section>
   )

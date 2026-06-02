@@ -30,6 +30,7 @@ import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { portfolioContent } from '@/features/portfolio/content'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSecretClick } from '@/features/admin/hooks/use-secret-click'
 
 const navItems = [
@@ -43,7 +44,9 @@ export function Sidebar() {
   const handleSecretClick = useSecretClick(5, 500)
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 overflow-y-auto py-12 md:flex md:flex-col">
+    <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 md:block">
+      <ScrollArea className="h-full">
+        <div className="flex min-h-full flex-col py-12">
       <div className="mb-8 rounded-[2rem] border border-border/60 bg-background/70 p-6 text-center backdrop-blur-md">
         <motion.button
           type="button"
@@ -177,6 +180,8 @@ export function Sidebar() {
         <p>COPYRIGHT © {new Date().getFullYear()}</p>
         <p>{portfolioContent.profile.fullName}. All rights reserved.</p>
       </motion.div>
+        </div>
+      </ScrollArea>
     </aside>
   )
 }

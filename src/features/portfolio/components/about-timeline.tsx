@@ -135,7 +135,7 @@ export function AboutTimeline() {
       <section className="space-y-4">
         <p className="text-sm uppercase tracking-[0.28em] text-muted-foreground">About</p>
         <h1 className="max-w-3xl text-4xl font-bold tracking-tighter sm:text-5xl">
-          From academic projects to systems that support real operations.
+          Building systems that support real operations.
         </h1>
         <p className="max-w-3xl text-base leading-7 text-muted-foreground">
           {portfolioContent.profile.summary}
