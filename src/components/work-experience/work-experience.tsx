@@ -1,9 +1,5 @@
-import {
-  BriefcaseBusinessIcon,
-  ChevronsDownUpIcon,
-  ChevronsUpDownIcon,
-} from "lucide-react"
-import type { ComponentProps, ComponentType } from "react"
+import { ChevronRight } from "lucide-react"
+import type { ComponentProps } from "react"
 import ReactMarkdown from "react-markdown"
 
 import {
@@ -11,28 +7,25 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Separator } from "@/components/ui/separator"
+import { ContactSheet } from "@/features/portfolio/components/contact-sheet"
+import type { ApiAccomplishment } from "@/features/portfolio/api/get-experiences"
 import { cn } from "@/lib/utils"
 
-/**
- * Represents the valid keys of the `iconMap` object, used to specify the type of icon
- * associated with an experience position.
- */
 export type ExperiencePositionItemType = {
   /** Unique identifier for the position */
   id: string
   /** The job title or position name */
   title: string
-  /** The period during which the position was held (e.g., "Jan 2020 - Dec 2021") */
+  /** The period during which the position was held (e.g., "2023 — NOW") */
   employmentPeriod: string
   /** The type of employment (e.g., "Full-time", "Part-time", "Contract") */
   employmentType?: string
   /** A brief description of the position or responsibilities */
   description?: string
-  /** An icon representing the position */
-  icon?: ComponentType<ComponentProps<"svg">>
   /** A list of skills associated with the position */
   skills?: string[]
+  /** Uploaded proof of work shown as a contact sheet beneath the entry */
+  accomplishments?: ApiAccomplishment[]
   /** Indicates if the position details are expanded in the UI */
   isExpanded?: boolean
 }
@@ -59,12 +52,9 @@ export type WorkExperienceProps = {
   experiences: ExperienceItemType[]
 }
 
-export function WorkExperience({
-  className,
-  experiences,
-}: WorkExperienceProps) {
+export function WorkExperience({ className, experiences }: WorkExperienceProps) {
   return (
-    <div className={cn("bg-background px-4", className)}>
+    <div className={cn("border-t border-border/60", className)}>
       {experiences.map((experience) => (
         <ExperienceItem key={experience.id} experience={experience} />
       ))}
@@ -77,157 +67,110 @@ export type ExperienceItemProps = {
 }
 
 export function ExperienceItem({ experience }: ExperienceItemProps) {
-  const hasMultiplePositions = experience.positions.length > 1
-
   return (
-    <div className="space-y-4 py-4">
-      <div className="not-prose flex items-center gap-3">
-        <div
-          className="flex size-6 shrink-0 items-center justify-center"
-          aria-hidden
-        >
-          {experience.companyLogo ? (
-            <img
-              src={experience.companyLogo}
-              alt={experience.companyName}
-              width={24}
-              height={24}
-              className="rounded-full"
-            />
-          ) : (
-            <span className="flex size-2 rounded-full bg-zinc-300 dark:bg-zinc-600" />
-          )}
-        </div>
+    <section className="record-row py-8">
+      <header className="flex items-center gap-3 pb-6">
+        {experience.companyLogo ? (
+          <img
+            src={experience.companyLogo}
+            alt=""
+            width={20}
+            height={20}
+            className="size-5 shrink-0 rounded-full"
+            aria-hidden
+          />
+        ) : null}
 
-        <h3 className="text-lg leading-snug font-medium text-foreground">
-          {experience.companyName}
-        </h3>
+        <h3 className="display-md text-foreground">{experience.companyName}</h3>
 
         {experience.isCurrentEmployer && (
-          <span className="relative flex items-center justify-center">
-            <span className="absolute inline-flex size-3 animate-ping rounded-full bg-info opacity-50" />
-            <span className="relative inline-flex size-2 rounded-full bg-info" />
-            <span className="sr-only">Current Employer</span>
+          <span className="flex items-center gap-1.5 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="relative flex items-center justify-center">
+              <span className="absolute inline-flex size-2.5 animate-ping rounded-full bg-info opacity-50" />
+              <span className="relative inline-flex size-1.5 rounded-full bg-info" />
+            </span>
+            Current
           </span>
         )}
-      </div>
+      </header>
 
-      <div
-        className={cn(
-          "relative space-y-4",
-          hasMultiplePositions &&
-            "before:absolute before:left-3 before:top-0 before:h-full before:w-px before:bg-border"
-        )}
-      >
-        {experience.positions.map((position, index) => (
-          <ExperiencePositionItem
-            key={position.id}
-            position={position}
-            isLast={hasMultiplePositions && index === experience.positions.length - 1}
-            showTimeline={hasMultiplePositions}
-          />
+      <div className="space-y-8">
+        {experience.positions.map((position) => (
+          <ExperiencePositionItem key={position.id} position={position} />
         ))}
       </div>
-    </div>
+    </section>
   )
 }
 
 export type ExperiencePositionItemProps = {
   position: ExperiencePositionItemType
-  /** Whether this is the last position in a multi-position group */
-  isLast?: boolean
-  /** Whether the parent company has multiple positions (shows timeline connector) */
-  showTimeline?: boolean
 }
 
 export function ExperiencePositionItem({
   position,
-  isLast = false,
 }: ExperiencePositionItemProps) {
-  const ExperienceIcon = position.icon ?? BriefcaseBusinessIcon
+  const accomplishments = position.accomplishments ?? []
 
   return (
-    <div
-      className={cn(
-        "relative",
-        isLast &&
-          "before:absolute before:left-0 before:top-3 before:h-[calc(100%-0.75rem)] before:w-4 before:bg-background"
-      )}
-    >
-      <Collapsible defaultOpen={position.isExpanded} disabled={!position.description}>
-        <CollapsibleTrigger
-                className={cn(
-                  "group not-prose block w-full text-left select-none",
-                  "relative before:absolute before:-top-1 before:-right-1 before:-bottom-1.5 before:left-7 before:rounded-lg hover:before:bg-muted/30",
-                  "data-[disabled]:before:content-none"
-                )}
-              >
-                <div className="relative z-1 mb-1 flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "flex size-6 shrink-0 items-center justify-center rounded-lg",
-                      "bg-muted text-muted-foreground",
-                      "border border-muted-foreground/15 ring-1 ring-border ring-offset-1 ring-offset-background"
-                    )}
-                    aria-hidden
-                  >
-                    <ExperienceIcon className="size-4" />
-                  </div>
+    <article className="grid gap-x-8 gap-y-3 md:grid-cols-[8.5rem_1fr]">
+      {/* Date rail — the machine layer, aligned left on wide screens */}
+      <div className="flex items-baseline gap-3 md:flex-col md:gap-1">
+        <p className="font-mono text-xs tabular-nums text-foreground">
+          {position.employmentPeriod}
+        </p>
+        {position.employmentType ? (
+          <p className="font-mono text-[0.6875rem] text-muted-foreground">
+            {position.employmentType}
+          </p>
+        ) : null}
+      </div>
 
-                  <h4 className="flex-1 text-base font-medium text-balance text-foreground">
-                    {position.title}
-                  </h4>
+      <div className="min-w-0">
+        <Collapsible
+          defaultOpen={position.isExpanded}
+          disabled={!position.description}
+        >
+          <CollapsibleTrigger
+            className={cn(
+              "group not-prose -mx-2 flex w-[calc(100%+1rem)] items-center gap-2 rounded px-2 py-1 text-left select-none",
+              "transition-colors hover:bg-muted/40 data-[disabled]:hover:bg-transparent",
+            )}
+          >
+            <h4 className="flex-1 font-display text-lg font-semibold tracking-tight text-balance text-foreground">
+              {position.title}
+            </h4>
 
-                  <div
-                    className="shrink-0 text-muted-foreground group-disabled:hidden [&_svg]:size-4"
-                    aria-hidden
-                  >
-                    <ChevronsDownUpIcon className="hidden group-data-[panel-open]:block" />
-                    <ChevronsUpDownIcon className="block group-data-[panel-open]:hidden" />
-                  </div>
-                </div>
+            {position.description ? (
+              <ChevronRight
+                className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]:rotate-90"
+                aria-hidden
+              />
+            ) : null}
+          </CollapsibleTrigger>
 
-                <div className="relative z-1 flex items-center gap-2 pl-9 text-sm text-muted-foreground">
-                  {position.employmentType && (
-                    <>
-                      <dl>
-                        <dt className="sr-only">Employment Type</dt>
-                        <dd>{position.employmentType}</dd>
-                      </dl>
+          <CollapsibleContent className="overflow-hidden">
+            {position.description && (
+              <Prose className="pt-2">
+                <ReactMarkdown>{position.description}</ReactMarkdown>
+              </Prose>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
 
-                      <Separator
-                        className="data-vertical:h-4"
-                        orientation="vertical"
-                      />
-                    </>
-                  )}
+        {Array.isArray(position.skills) && position.skills.length > 0 && (
+          <ul className="not-prose flex flex-wrap gap-x-3 gap-y-1.5 pt-3">
+            {position.skills.map((skill) => (
+              <li key={skill} className="flex">
+                <Skill>{skill}</Skill>
+              </li>
+            ))}
+          </ul>
+        )}
 
-                  <dl>
-                    <dt className="sr-only">Employment Period</dt>
-                    <dd>{position.employmentPeriod}</dd>
-                  </dl>
-                </div>
-              </CollapsibleTrigger>
-
-        <CollapsibleContent className="overflow-hidden">
-          {position.description && (
-            <Prose className="pt-2 pl-9">
-              <ReactMarkdown>{position.description}</ReactMarkdown>
-            </Prose>
-          )}
-        </CollapsibleContent>
-      </Collapsible>
-
-      {Array.isArray(position.skills) && position.skills.length > 0 && (
-        <ul className="not-prose flex flex-wrap gap-1.5 pt-3 pl-9">
-          {position.skills.map((skill, index) => (
-            <li key={index} className="flex">
-              <Skill>{skill}</Skill>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+        <ContactSheet accomplishments={accomplishments} label={position.title} />
+      </div>
+    </article>
   )
 }
 
@@ -235,8 +178,8 @@ function Prose({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "prose prose-sm max-w-none prose-ncdai font-mono text-foreground prose-zinc dark:prose-invert",
-        className
+        "prose prose-sm max-w-none prose-ncdai text-muted-foreground prose-zinc dark:prose-invert",
+        className,
       )}
       {...props}
     />
@@ -247,8 +190,9 @@ function Skill({ className, ...props }: ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-lg border bg-muted/50 px-1.5 py-0.5 font-mono text-xs text-muted-foreground",
-        className
+        "font-mono text-[0.6875rem] tracking-tight text-muted-foreground",
+        "before:mr-1.5 before:text-border before:content-['/']",
+        className,
       )}
       {...props}
     />

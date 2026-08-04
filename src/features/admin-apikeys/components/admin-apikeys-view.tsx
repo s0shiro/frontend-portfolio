@@ -2,14 +2,27 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Copy, Key, Plus, Trash2 } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { AdminEmptyState, AdminErrorState, AdminLoadingState, AdminPageHeader } from '@/features/admin/components/admin-page'
+import {
+  AdminEmptyState,
+  AdminErrorState,
+  AdminLoadingState,
+  AdminPageHeader,
+  AdminStatus,
+} from '@/features/admin/components/admin-page'
+import { buttonVariants } from '@/components/ui/button-variants'
+import { cn } from '@/lib/utils'
 import { useApiKeys, useCreateApiKey, useDeleteApiKey } from '../api/use-admin-apikeys'
 
 export function AdminApiKeysView() {
@@ -57,43 +70,44 @@ export function AdminApiKeysView() {
 
   const createDialog = (
     <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-      <DialogTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4">
-        <Plus className="h-4 w-4" />
+      <DialogTrigger className={cn(buttonVariants(), 'gap-2')}>
+        <Plus className="size-4" />
         Generate token
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Generate New API Token</DialogTitle>
+          <DialogTitle>Generate a token</DialogTitle>
           <DialogDescription>
-            Create a permanent token for API access. Copy it now; it will only be shown once.
+            Creates a permanent token for API access. Copy it now — it is shown once.
           </DialogDescription>
         </DialogHeader>
 
         {createdKey ? (
-          <div className="space-y-4 py-4">
-            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4">
-              <p className="text-sm font-medium mb-2 text-destructive">
-                Make sure to copy your personal access token now. You won't be able to see it again.
-              </p>
-              <div className="flex gap-2">
-                <Input readOnly value={createdKey} className="font-mono text-sm" />
-                <Button variant="outline" size="icon" onClick={handleCopy} aria-label="Copy API token">
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-destructive">
+              Copy this token now. You will not be able to see it again.
+            </p>
+            <div className="flex gap-2">
+              <Input readOnly value={createdKey} className="font-mono text-sm" />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopy}
+                aria-label="Copy API token"
+              >
+                {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+              </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="key-name">Token Name</Label>
-              <Input
-                id="key-name"
-                placeholder="e.g. MCP Server Token"
-                value={newKeyName}
-                onChange={(e) => setNewKeyName(e.target.value)}
-              />
-            </div>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="key-name">Token name</Label>
+            <Input
+              id="key-name"
+              placeholder="e.g. MCP server token"
+              value={newKeyName}
+              onChange={(e) => setNewKeyName(e.target.value)}
+            />
           </div>
         )}
 
@@ -102,7 +116,7 @@ export function AdminApiKeysView() {
             <Button onClick={() => handleCloseDialog(false)}>Done</Button>
           ) : (
             <Button onClick={handleCreate} disabled={!newKeyName.trim() || createApiKey.isPending}>
-              {createApiKey.isPending ? 'Generating...' : 'Generate Token'}
+              {createApiKey.isPending ? 'Generating...' : 'Generate token'}
             </Button>
           )}
         </DialogFooter>
@@ -111,11 +125,11 @@ export function AdminApiKeysView() {
   )
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <AdminPageHeader
-        eyebrow="API Keys"
+        eyebrow="API keys"
         title="System access tokens"
-        description="Manage permanent Personal Access Tokens for system integrations such as MCP servers or bots."
+        description="Permanent tokens for trusted integrations such as MCP servers or bots."
         action={createDialog}
       />
 
@@ -124,102 +138,60 @@ export function AdminApiKeysView() {
       {isLoading ? (
         <AdminLoadingState description="Loading keys..." />
       ) : !apiKeys || apiKeys.length === 0 ? (
-        <AdminEmptyState icon={Key} title="No API keys yet" description="Generate a token to connect a trusted integration." />
+        <AdminEmptyState
+          icon={Key}
+          title="No API keys yet"
+          description="Generate a token to connect a trusted integration."
+        />
       ) : (
-        <Card className="border-border/60 bg-background/70 backdrop-blur-md">
-          <CardContent className="p-0">
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Token preview</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {apiKeys.map((apiKey) => (
-                    <TableRow key={apiKey.id}>
-                      <TableCell className="font-medium text-foreground">{apiKey.name || 'Unnamed Key'}</TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {apiKey.start ? `${apiKey.start}••••••••` : `${apiKey.id.slice(0, 8)}...`}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={apiKey.enabled ? 'default' : 'secondary'}>
-                          {apiKey.enabled ? 'Active' : 'Disabled'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(apiKey.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          aria-label="Revoke API key"
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          onClick={() => setRevokeTargetId(apiKey.id)}
-                          disabled={deleteApiKey.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Revoke
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+        <div className="border-t border-border/60">
+          {apiKeys.map((apiKey) => (
+            <motion.article
+              key={apiKey.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid gap-x-6 gap-y-2 border-b border-border/60 py-5 md:grid-cols-[1fr_auto] md:items-center"
+            >
+              <div className="min-w-0 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <h2 className="font-display text-base font-semibold tracking-tight text-foreground">
+                    {apiKey.name || 'Unnamed key'}
+                  </h2>
+                  <AdminStatus
+                    label={apiKey.enabled ? 'Active' : 'Disabled'}
+                    tone={apiKey.enabled ? 'active' : 'neutral'}
+                  />
+                </div>
 
-            <div className="divide-y divide-border/50 md:hidden">
-              {apiKeys.map((apiKey) => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  key={apiKey.id}
-                  className="space-y-3 p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-foreground">{apiKey.name || 'Unnamed Key'}</p>
-                      <p className="font-mono text-xs text-muted-foreground">
-                        {apiKey.start ? `${apiKey.start}••••••••` : `${apiKey.id.slice(0, 8)}...`}
-                      </p>
-                    </div>
-                    <Badge variant={apiKey.enabled ? 'default' : 'secondary'}>
-                      {apiKey.enabled ? 'Active' : 'Disabled'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-muted-foreground">Created {new Date(apiKey.createdAt).toLocaleDateString()}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      aria-label="Revoke API key"
-                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => setRevokeTargetId(apiKey.id)}
-                      disabled={deleteApiKey.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Revoke
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <p className="font-mono text-xs text-muted-foreground">
+                  {apiKey.start ? `${apiKey.start}••••••••` : `${apiKey.id.slice(0, 8)}...`}
+                  <span className="px-2 text-border">·</span>
+                  created {new Date(apiKey.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label={`Revoke ${apiKey.name || 'unnamed key'}`}
+                className="justify-self-start text-destructive hover:bg-destructive/10 hover:text-destructive md:justify-self-end"
+                onClick={() => setRevokeTargetId(apiKey.id)}
+                disabled={deleteApiKey.isPending}
+              >
+                <Trash2 className="size-4" />
+                Revoke
+              </Button>
+            </motion.article>
+          ))}
+        </div>
       )}
 
       <Dialog open={revokeTargetId !== null} onOpenChange={(open) => !open && setRevokeTargetId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Revoke API Key</DialogTitle>
+            <DialogTitle>Revoke this key</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. The key will be permanently revoked and integrations using it will stop working.
+              Integrations using this key stop working immediately. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -233,7 +205,7 @@ export function AdminApiKeysView() {
                 }
               }}
             >
-              Revoke Key
+              Revoke key
             </Button>
           </DialogFooter>
         </DialogContent>

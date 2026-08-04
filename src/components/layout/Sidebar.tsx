@@ -1,13 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import {
-  ArrowUpRight,
-  Home,
-  User,
-  FolderOpen,
-  Mail,
-  BadgeCheck,
-  Download,
-} from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -34,70 +25,109 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSecretClick } from '@/features/admin/hooks/use-secret-click'
 
 const navItems = [
-  { path: '/', label: 'Home', icon: Home },
-  { path: '/about', label: 'About', icon: User },
-  { path: '/projects', label: 'Projects', icon: FolderOpen },
-  { path: '/contact', label: 'Contact', icon: Mail },
+  { path: '/', label: 'Index' },
+  { path: '/about', label: 'About' },
+  { path: '/projects', label: 'Projects' },
+  { path: '/contact', label: 'Contact' },
 ]
 
 export function Sidebar() {
   const handleSecretClick = useSecretClick(5, 500)
+  const { profile } = portfolioContent
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 md:block">
+    <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 md:block">
       <ScrollArea className="h-full">
         <div className="flex min-h-full flex-col py-12">
-      <div className="mb-8 rounded-[2rem] border border-border/60 bg-background/70 p-6 text-center backdrop-blur-md">
-        <motion.button
-          type="button"
-          aria-label="Profile avatar"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          onClick={handleSecretClick}
-          className="cursor-pointer bg-transparent border-0 p-0"
-        >
-          <Avatar className="mx-auto size-24 border border-border/60">
-            <AvatarImage
-              src={avatarImage}
-              alt={portfolioContent.profile.fullName}
-            />
-            <AvatarFallback className="bg-muted/40 text-2xl font-bold tracking-tight text-foreground">
-              NM
-            </AvatarFallback>
-          </Avatar>
-        </motion.button>
+          <div className="flex items-center gap-3">
+            <motion.button
+              type="button"
+              aria-label="Profile avatar"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              onClick={handleSecretClick}
+              className="cursor-pointer border-0 bg-transparent p-0"
+            >
+              <Avatar className="size-11 rounded-none border border-border/70">
+                <AvatarImage src={avatarImage} alt={profile.fullName} className="object-cover" />
+                <AvatarFallback className="rounded-none bg-muted/40 font-display text-sm font-semibold">
+                  NM
+                </AvatarFallback>
+              </Avatar>
+            </motion.button>
 
-        <div className="mt-5 space-y-2">
-          <h2 className="flex items-center justify-center gap-1.5 text-xl font-bold tracking-tight text-foreground">
-            {portfolioContent.profile.fullName}
-            <BadgeCheck
-              aria-label="Verified"
-              className="size-5 fill-sky-500 text-white"
-            />
-          </h2>
-          <p className="text-sm font-medium text-blue-500/80">
-            @{portfolioContent.profile.fullName.toLowerCase().replace(/\s+/g, '')}
-          </p>
-          <div className="flex justify-center pt-1">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-green-500" />
-              </span>
-              Available for work
-            </span>
+            <div className="min-w-0">
+              <h2 className="truncate font-display text-base font-semibold tracking-tight text-foreground">
+                {profile.fullName}
+              </h2>
+              <p className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-muted-foreground">
+                Full-stack developer
+              </p>
+            </div>
           </div>
-          <p className="text-sm leading-6 text-muted-foreground">
-            {portfolioContent.profile.headline}
+
+          <p className="pt-5 text-sm leading-6 text-muted-foreground">
+            {profile.headline}
           </p>
-          <div className="flex items-center justify-center gap-2 mt-2">
+
+          <p className="flex items-center gap-2 pt-4 font-mono text-[0.625rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="relative flex size-1.5">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-violet-500 opacity-70" />
+              <span className="relative inline-flex size-1.5 rounded-full bg-violet-500" />
+            </span>
+            Available for work
+          </p>
+
+          <nav className="mt-10 border-t border-border/60">
+            {navItems.map((item, index) => (
+              <Link
+                key={item.label}
+                to={item.path}
+                className="group flex items-baseline gap-3 border-b border-border/60 py-2.5 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground"
+              >
+                {({ isActive }: { isActive: boolean }) => (
+                  <>
+                    <span className="tabular-nums text-border transition-colors group-hover:text-muted-foreground">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="flex-1">{item.label}</span>
+                    {isActive ? (
+                      <motion.span
+                        layoutId="sidebar-active"
+                        className="size-1.5 rounded-full bg-violet-500"
+                        transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                      />
+                    ) : null}
+                  </>
+                )}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="mt-8 space-y-2">
+            <a
+              href={`mailto:${profile.email}`}
+              className="block font-mono text-[0.6875rem] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            >
+              {profile.email}
+            </a>
+            <a
+              href={resumePDF}
+              download="NEILVEN_MASCARINAS.pdf"
+              className="block font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            >
+              Download CV ↓
+            </a>
+          </div>
+
+          <div className="mt-6 flex items-center gap-3">
             <a
               href="https://github.com/s0shiro"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub profile"
-              className="flex size-8 items-center justify-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="text-muted-foreground transition-colors hover:text-foreground"
             >
               <GithubIcon className="size-4" />
             </a>
@@ -106,80 +136,20 @@ export function Sidebar() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn profile"
-              className="flex size-8 items-center justify-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="text-muted-foreground transition-colors hover:text-foreground"
             >
               <LinkedinIcon className="size-4" />
             </a>
           </div>
-        </div>
 
-        <div className="mt-6 grid gap-3 text-left">
-          <a
-            className="flex items-center justify-between rounded-2xl border border-border/60 bg-muted/40 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            href={`mailto:${portfolioContent.profile.email}`}
-          >
-            <span className="flex items-center gap-3">
-              <Mail className="size-4" />
-              Email
-            </span>
-            <ArrowUpRight className="size-4" />
-          </a>
-          <motion.a
-            className="flex items-center justify-between rounded-2xl border border-border/60 bg-muted/40 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            href={resumePDF}
-            download="NEILVEN_MASCARINAS.pdf"
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className="flex items-center gap-3">
-              <Download className="size-4" />
-              Download CV
-            </span>
-            <ArrowUpRight className="size-4 opacity-50" />
-          </motion.a>
-        </div>
-      </div>
-
-      <nav className="mt-4 flex flex-1 flex-col space-y-2">
-        {navItems.map((item, i) => (
-          <motion.div
-            key={item.label}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
-          >
-            <Link
-              to={item.path}
-              className="relative flex items-center gap-4 rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground [&.active]:text-foreground"
-            >
-              {({ isActive }: { isActive: boolean }) => (
-                <>
-                  {isActive ? (
-                    <motion.span
-                      layoutId="sidebar-active"
-                      className="absolute inset-0 rounded-2xl border border-border/60 bg-background/80"
-                      transition={{ type: 'spring', stiffness: 420, damping: 36 }}
-                    />
-                  ) : null}
-                  <item.icon className="relative z-10 size-4" />
-                  <span className="relative z-10">{item.label}</span>
-                </>
-              )}
-            </Link>
-          </motion.div>
-        ))}
-      </nav>
-
-      <motion.div
-        className="mt-8 space-y-2 border-t border-border/40 pt-6 text-center text-[11px] text-muted-foreground"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <ThemeToggle />
-        <p>COPYRIGHT © {new Date().getFullYear()}</p>
-        <p>{portfolioContent.profile.fullName}. All rights reserved.</p>
-      </motion.div>
+          <div className="mt-auto space-y-3 pt-10">
+            <ThemeToggle />
+            <p className="font-mono text-[0.625rem] leading-relaxed text-muted-foreground">
+              © {new Date().getFullYear()} {profile.fullName}
+              <br />
+              {profile.location}
+            </p>
+          </div>
         </div>
       </ScrollArea>
     </aside>

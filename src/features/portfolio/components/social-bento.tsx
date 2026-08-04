@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowUpRight, Mail } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import { ArrowUpRight } from 'lucide-react'
 
 // Custom SVG Brand Icons since Lucide's are deprecated
 const BrandIcons = {
@@ -24,115 +22,66 @@ const BrandIcons = {
       <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
       <path d="M9 18c-4.51 2-5-2-7-2" />
     </svg>
-  )
+  ),
 }
 
 const socials = [
   {
-    name: 'Stay in Touch',
-    description: 'Reach out via email for inquiries or collaborations.',
-    icon: Mail,
-    href: 'mailto:mascarinas022@gmail.com',
-    label: 'Email Me',
-    className: 'md:col-span-8',
-    iconOverlay: Mail,
+    name: 'GitHub',
+    handle: '@s0shiro',
+    icon: BrandIcons.Github,
+    href: 'https://github.com/s0shiro',
+  },
+  {
+    name: 'LinkedIn',
+    handle: 'neilven-mascariñas',
+    icon: BrandIcons.Linkedin,
+    href: 'https://www.linkedin.com/in/neilven-mascari%C3%B1as-0809452a8/',
   },
   {
     name: 'Instagram',
-    description: 'Visual journey and snapshots.',
+    handle: '@neilven_',
     icon: BrandIcons.Instagram,
     href: 'https://www.instagram.com/neilven_/',
-    label: 'Follow',
-    className: 'md:col-span-4',
-    iconOverlay: BrandIcons.Instagram,
-  },
-  {
-    name: "LinkedIn",
-    description: 'Professional updates and networking.',
-    icon: BrandIcons.Linkedin,
-    href: 'https://www.linkedin.com/in/neilven-mascari%C3%B1as-0809452a8/',
-    label: 'Connect',
-    className: 'md:col-span-6',
-    iconOverlay: BrandIcons.Linkedin,
-  },
-  {
-    name: 'GitHub',
-    description: 'Explore my open-source contributions.',
-    icon: BrandIcons.Github,
-    href: 'https://github.com/s0shiro',
-    label: 'View Code',
-    className: 'md:col-span-6',
-    iconOverlay: BrandIcons.Github,
   },
 ]
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-}
-
 export function SocialBentoGrid() {
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="grid grid-cols-1 md:grid-cols-12 auto-rows-[250px] gap-4"
-    >
-      {socials.map((social) => (
-        <motion.a
-          key={social.name}
-          href={social.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          variants={itemVariants}
-          whileHover={{ y: -5, scale: 1.02 }}
-          whileTap={{ scale: 0.95 }}
-          className={cn(
-            "group block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl",
-            social.className
-          )}
-        >
-          <Card className="h-full overflow-hidden bg-background/60 backdrop-blur-md border-white/10 transition-colors hover:bg-muted/50 flex flex-col justify-between relative shadow-sm">
-            
-            {/* Background Icon Overlay */}
-            <div className="absolute -bottom-8 -right-8 text-muted-foreground/10 group-hover:text-primary/10 transition-all duration-500 pointer-events-none transform group-hover:scale-110 group-hover:-rotate-12">
-              <social.iconOverlay className="w-56 h-56" />
-            </div>
+    <ul className="border-t border-border/60">
+      {socials.map((social, index) => {
+        const isExternal = !social.href.startsWith('mailto:')
 
-            <CardHeader className="relative z-10">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                <social.icon className="w-5 h-5" />
-              </div>
-              <CardTitle className="tracking-tighter font-bold text-2xl group-hover:text-primary transition-colors duration-300">
+        return (
+          <motion.li
+            key={social.name}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className="border-b border-border/60"
+          >
+            <a
+              href={social.href}
+              {...(isExternal
+                ? { target: '_blank', rel: 'noopener noreferrer' }
+                : {})}
+              className="group flex items-center gap-4 py-4 transition-colors hover:bg-muted/30"
+            >
+              <social.icon className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+              <span className="w-24 shrink-0 font-mono text-xs uppercase tracking-[0.14em] text-foreground">
                 {social.name}
-              </CardTitle>
-              <CardDescription className="text-muted-foreground font-medium max-w-[85%] mt-2">
-                {social.description}
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="relative z-10 flex justify-between items-end pb-6">
-               <span className="text-sm font-semibold opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 flex items-center gap-1 text-primary">
-                {social.label}
               </span>
-              <div className="w-8 h-8 rounded-full bg-background border border-border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-sm ml-auto">
-                <ArrowUpRight className="w-4 h-4" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.a>
-      ))}
-    </motion.div>
+              <span className="min-w-0 flex-1 truncate font-mono text-xs text-muted-foreground">
+                {social.handle}
+              </span>
+              <ArrowUpRight
+                className="size-4 shrink-0 text-border transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground"
+                aria-hidden
+              />
+            </a>
+          </motion.li>
+        )
+      })}
+    </ul>
   )
 }

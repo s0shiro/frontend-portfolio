@@ -33,10 +33,10 @@ function RootLayout() {
     <ThemeProvider>
       <div className="flex min-h-screen flex-col bg-background text-foreground font-sans md:flex-row md:justify-center">
         <MobileNav />
-        <div className="flex w-full max-w-[1440px] gap-8 px-4 md:px-8 lg:gap-12 lg:px-12">
+        <div className="flex w-full max-w-[1180px] gap-8 px-5 md:px-8 lg:gap-16 lg:px-10">
           <Sidebar />
 
-          <main className="min-w-0 flex-1 py-12 md:py-16">
+          <main className="min-w-0 flex-1 py-10 md:py-16">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={pathname}

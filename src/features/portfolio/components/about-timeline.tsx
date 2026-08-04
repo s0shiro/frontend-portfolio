@@ -1,26 +1,23 @@
 import { type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CodeIcon, PaletteIcon, AlertCircle, BriefcaseIcon } from 'lucide-react'
+import { AlertCircle, BriefcaseIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { ExperienceItemType, ExperiencePositionItemType } from '@/components/work-experience/work-experience'
+import type {
+  ExperienceItemType,
+  ExperiencePositionItemType,
+} from '@/components/work-experience/work-experience'
 import { WorkExperience } from '@/components/work-experience/work-experience'
 import { portfolioContent } from '@/features/portfolio/content'
 import { fetchPublicExperiences, type ApiExperience } from '../api/get-experiences'
 
-function pickPositionIcon(role: string) {
-  const lower = role.toLowerCase()
-  if (lower.includes('design') || lower.includes('ui')) return PaletteIcon
-  return CodeIcon
-}
-
 function formatPeriod(start: string, end: string | null): string {
-  const fmt = (d: string) => {
-    const date = new Date(d)
+  const fmt = (value: string) => {
+    const date = new Date(value)
     return `${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`
   }
-  return end ? `${fmt(start)} – ${fmt(end)}` : `${fmt(start)} – ∞`
+
+  return end ? `${fmt(start)} — ${fmt(end)}` : `${fmt(start)} — NOW`
 }
 
 function formatExperiences(apiExperiences: ApiExperience[] | undefined): ExperienceItemType[] {
@@ -41,17 +38,19 @@ function formatExperiences(apiExperiences: ApiExperience[] | undefined): Experie
       (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     )
 
-    const positions: ExperiencePositionItemType[] = sorted.map((e) => ({
-      id: e.id,
-      title: e.role,
-      employmentPeriod: formatPeriod(e.startDate, e.endDate),
-      employmentType: e.employmentType ?? undefined,
-      description: e.description ?? undefined,
-      icon: pickPositionIcon(e.role),
-      skills: e.skills ?? undefined,
+    const positions: ExperiencePositionItemType[] = sorted.map((entry, index) => ({
+      id: entry.id,
+      title: entry.role,
+      employmentPeriod: formatPeriod(entry.startDate, entry.endDate),
+      employmentType: entry.employmentType ?? undefined,
+      description: entry.description ?? undefined,
+      skills: entry.skills ?? undefined,
+      accomplishments: entry.accomplishments ?? [],
+      // Lead with the most recent role open; older ones stay collapsed.
+      isExpanded: index === 0,
     }))
 
-    const hasCurrentRole = sorted.some((e) => !e.endDate)
+    const hasCurrentRole = sorted.some((entry) => !entry.endDate)
 
     apiItems.push({
       id: sorted[0].id,
@@ -66,16 +65,17 @@ function formatExperiences(apiExperiences: ApiExperience[] | undefined): Experie
 
 function ExperienceSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-background/50 backdrop-blur-md px-4 py-4 animate-pulse space-y-6">
-      {Array.from({ length: 2 }).map((_, i) => (
-        <div key={i} className="space-y-3 py-2">
-          <div className="flex items-center gap-3">
-            <div className="size-2 rounded-full bg-muted" />
-            <div className="h-4 w-40 rounded bg-muted" />
-          </div>
-          <div className="pl-5 space-y-2">
-            <div className="h-3 w-56 rounded bg-muted" />
-            <div className="h-3 w-32 rounded bg-muted" />
+    <div className="animate-pulse border-t border-border/60">
+      {Array.from({ length: 2 }).map((_, index) => (
+        <div key={index} className="record-row space-y-6 py-8">
+          <div className="h-7 w-52 rounded bg-muted" />
+          <div className="grid gap-x-8 gap-y-3 md:grid-cols-[8.5rem_1fr]">
+            <div className="h-3 w-24 rounded bg-muted" />
+            <div className="space-y-2">
+              <div className="h-5 w-64 rounded bg-muted" />
+              <div className="h-3 w-full max-w-md rounded bg-muted" />
+              <div className="h-3 w-40 rounded bg-muted" />
+            </div>
           </div>
         </div>
       ))}
@@ -83,8 +83,25 @@ function ExperienceSkeleton() {
   )
 }
 
+function SectionHeading({ index, label }: { index: string; label: string }) {
+  return (
+    <div className="flex items-baseline gap-4 pb-6">
+      <span className="font-mono text-[0.6875rem] tabular-nums text-muted-foreground">
+        {index}
+      </span>
+      <span className="eyebrow">{label}</span>
+      <span className="h-px flex-1 bg-border/70" />
+    </div>
+  )
+}
+
 export function AboutTimeline() {
-  const { data: apiExperiences, isLoading: isExperiencesLoading, isError: isExperiencesError, refetch } = useQuery({
+  const {
+    data: apiExperiences,
+    isLoading: isExperiencesLoading,
+    isError: isExperiencesError,
+    refetch,
+  } = useQuery({
     queryKey: ['portfolio', 'experiences'],
     queryFn: fetchPublicExperiences,
     staleTime: 1000 * 60 * 5,
@@ -98,12 +115,14 @@ export function AboutTimeline() {
     experienceContent = <ExperienceSkeleton />
   } else if (isExperiencesError) {
     experienceContent = (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border/60 py-12 text-center">
-        <AlertCircle className="size-6 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Failed to load experience.</p>
+      <div className="flex flex-col items-center justify-center gap-3 border-y border-border/60 py-16 text-center">
+        <AlertCircle className="size-5 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          The experience record didn&apos;t load.
+        </p>
         <button
-          onClick={() => refetch()}
-          className="text-sm font-medium underline underline-offset-4 hover:text-foreground text-muted-foreground transition-colors"
+          onClick={() => void refetch()}
+          className="font-mono text-xs uppercase tracking-[0.16em] text-foreground underline underline-offset-4 transition-opacity hover:opacity-70"
         >
           Try again
         </button>
@@ -111,19 +130,20 @@ export function AboutTimeline() {
     )
   } else if (experiences.length === 0) {
     experienceContent = (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border/60 py-12 text-center">
-        <BriefcaseIcon className="size-6 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">No experience entries yet.</p>
+      <div className="flex flex-col items-center justify-center gap-3 border-y border-border/60 py-16 text-center">
+        <BriefcaseIcon className="size-5 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          No roles on the record yet.
+        </p>
       </div>
     )
   } else {
     experienceContent = (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.1 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.4 }}
-        className="overflow-hidden rounded-xl border border-border/60 bg-background/50 backdrop-blur-md"
       >
         <WorkExperience experiences={experiences} />
       </motion.div>
@@ -131,59 +151,74 @@ export function AboutTimeline() {
   }
 
   return (
-    <div className="space-y-10">
-      <section className="space-y-4">
-        <p className="text-sm uppercase tracking-[0.28em] text-muted-foreground">About</p>
-        <h1 className="max-w-3xl text-4xl font-bold tracking-tighter sm:text-5xl">
+    <div className="space-y-16">
+      <header className="space-y-6">
+        <span className="eyebrow">About</span>
+        <h1 className="display-xl max-w-4xl text-foreground">
           Building systems that support real operations.
         </h1>
-        <p className="max-w-3xl text-base leading-7 text-muted-foreground">
+        <p className="max-w-2xl text-base leading-7 text-muted-foreground">
           {portfolioContent.profile.summary}
         </p>
+      </header>
+
+      <section>
+        <SectionHeading index="01" label="Experience" />
+        {experienceContent}
       </section>
 
-      <section className="space-y-4">
-        <div className="space-y-1">
-          <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Experience</p>
-          <h2 className="text-2xl font-bold tracking-tighter">What I have shipped so far</h2>
-        </div>
-        <div className="space-y-4">
-          {experienceContent}
-        </div>
+      <section>
+        <SectionHeading index="02" label="Education" />
+        <dl className="border-t border-border/60">
+          {portfolioContent.education.map((item) => (
+            <div
+              key={item.institution}
+              className="record-row grid gap-x-8 gap-y-1 py-5 md:grid-cols-[8.5rem_1fr]"
+            >
+              <dt className="font-display text-base font-semibold tracking-tight text-foreground md:col-start-2">
+                {item.institution}
+              </dt>
+              <dd className="font-mono text-xs text-muted-foreground md:col-start-1 md:row-start-1">
+                {item.note ? 'Honors' : 'Degree'}
+              </dd>
+              <dd className="text-sm leading-6 text-muted-foreground md:col-start-2">
+                {item.program}
+                {item.note ? (
+                  <span className="block pt-1 font-mono text-xs text-foreground/70">
+                    {item.note}
+                  </span>
+                ) : null}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <Card className="border-border/60 bg-card/80 backdrop-blur-md">
-          <CardHeader>
-            <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Education</p>
-            <CardTitle className="text-2xl font-bold tracking-tighter">
-              Formal foundations in technology and problem solving
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {portfolioContent.education.map((item) => (
-              <div key={item.institution} className="rounded-2xl border border-border/60 bg-muted/40 p-4">
-                <p className="text-lg font-semibold tracking-tight text-foreground">{item.institution}</p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.program}</p>
-                {item.note ? <p className="mt-2 text-sm text-foreground/80">{item.note}</p> : null}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60 bg-background/70 backdrop-blur-md">
-          <CardHeader>
-            <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Working Style</p>
-            <CardTitle className="text-2xl font-bold tracking-tighter">
-              How I like to build
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm leading-6 text-muted-foreground">
-            <p>I prefer software that is readable, practical, and shaped by the actual workflow it supports.</p>
-            <p>I value code reviews, iterative delivery, and UI decisions that make operational tasks faster and clearer.</p>
-            <p>I am especially interested in full-stack work where product decisions and implementation quality matter equally.</p>
-          </CardContent>
-        </Card>
+      <section>
+        <SectionHeading index="03" label="Working style" />
+        <div className="grid gap-x-8 gap-y-6 sm:grid-cols-3">
+          {[
+            {
+              heading: 'Readable over clever',
+              body: 'Software shaped by the workflow it supports, written so the next person can change it.',
+            },
+            {
+              heading: 'Iterative delivery',
+              body: 'Code review, small increments, and UI decisions that make operational tasks faster.',
+            },
+            {
+              heading: 'Full-stack by choice',
+              body: 'Product decisions and implementation quality matter equally, so I want a hand in both.',
+            },
+          ].map((item) => (
+            <div key={item.heading} className="border-t border-border/60 pt-4">
+              <h3 className="pb-2 font-display text-base font-semibold tracking-tight text-foreground">
+                {item.heading}
+              </h3>
+              <p className="text-sm leading-6 text-muted-foreground">{item.body}</p>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   )

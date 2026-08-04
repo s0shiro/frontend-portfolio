@@ -1,56 +1,69 @@
-import type { ElementType } from "react";
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { FolderOpen, Mail, Briefcase, MailOpen, ArrowRight, ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { useAdminProjects } from "@/features/admin-projects/hooks/use-admin-projects";
 import { useAdminMessages } from "@/features/admin-messages/hooks/use-admin-messages";
 import { useAdminExperiences } from "@/features/admin-experiences/hooks/use-admin-experiences";
-import { AdminPageHeader } from "./admin-page";
+import { AdminPageHeader, AdminSectionHeading, AdminStatus } from "./admin-page";
 
 const container = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
 };
 
 const item = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 260, damping: 20 } },
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0 },
 };
 
-type StatCardProps = {
+type LedgerEntry = {
   label: string;
   value: number;
-  icon: ElementType;
-  accent: string;
-  iconBg: string;
-  description: string;
   to: string;
+  emphasis?: boolean;
 };
 
-function StatCard({ label, value, icon: Icon, accent, iconBg, description, to }: StatCardProps) {
+/**
+ * The state of the record, read as one line of figures. Deliberately not four
+ * cards: these numbers belong together, and comparing them is the whole point.
+ */
+function Ledger({ entries }: { entries: LedgerEntry[] }) {
   return (
-    <motion.div variants={item} whileHover={{ y: -4 }} className="col-span-12 sm:col-span-6 lg:col-span-3">
-      <Link to={to as never} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-xl">
-        <Card className="h-full bg-background/60 backdrop-blur-md border-border/60 ring-0 transition-colors hover:bg-muted/25">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{label}</span>
-              <span className={cn("flex size-8 items-center justify-center rounded-lg", iconBg)}>
-                <Icon className={cn("size-4", accent)} />
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-4xl font-bold tracking-tighter text-foreground">{value}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-          </CardContent>
-        </Card>
-      </Link>
-    </motion.div>
+    // gap-px over a border-coloured background draws the hairlines, which keeps
+    // the rules correct at every breakpoint without per-cell border juggling.
+    <dl className="grid grid-cols-2 gap-px border-y border-border/60 bg-border/60 lg:grid-cols-4">
+      {entries.map((entry) => (
+        <Link
+          key={entry.label}
+          to={entry.to as never}
+          className="group bg-background px-4 py-6 transition-colors hover:bg-muted/30"
+        >
+          <dt className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground">
+            {entry.label}
+          </dt>
+          <dd
+            className={cn(
+              "pt-2 font-display text-4xl font-semibold tabular-nums tracking-tight lg:text-5xl",
+              entry.emphasis && entry.value > 0
+                ? "text-violet-600 dark:text-violet-400"
+                : "text-foreground",
+            )}
+          >
+            {String(entry.value).padStart(2, "0")}
+          </dd>
+        </Link>
+      ))}
+    </dl>
   );
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function AdminDashboard() {
@@ -58,147 +71,96 @@ export function AdminDashboard() {
   const { messages } = useAdminMessages();
   const { experiences } = useAdminExperiences();
 
-  const unread = messages.filter((m) => !m.isRead);
+  const unread = messages.filter((message) => !message.isRead);
   const recentMessages = [...messages]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
+    .slice(0, 6);
 
-  const stats: StatCardProps[] = [
-    { label: "Projects", value: projects.length, icon: FolderOpen, accent: "text-blue-500", iconBg: "bg-blue-500/10", description: "Portfolio items published", to: "/admin/projects" },
-    { label: "Experiences", value: experiences.length, icon: Briefcase, accent: "text-violet-500", iconBg: "bg-violet-500/10", description: "Resume entries", to: "/admin/experiences" },
-    { label: "Unread", value: unread.length, icon: Mail, accent: "text-amber-500", iconBg: "bg-amber-500/10", description: "Messages awaiting reply", to: "/admin/messages" },
-    { label: "Total Messages", value: messages.length, icon: MailOpen, accent: "text-emerald-500", iconBg: "bg-emerald-500/10", description: "All contact submissions", to: "/admin/messages" },
+  const ledger: LedgerEntry[] = [
+    { label: "Projects", value: projects.length, to: "/admin/projects" },
+    { label: "Experiences", value: experiences.length, to: "/admin/experiences" },
+    { label: "Unread", value: unread.length, to: "/admin/messages", emphasis: true },
+    { label: "Messages", value: messages.length, to: "/admin/messages" },
   ];
 
-  const quickActions = [
-    { label: "Manage Projects", icon: FolderOpen, to: "/admin/projects", accent: "text-blue-500" },
-    { label: "View Messages", icon: Mail, to: "/admin/messages", accent: "text-amber-500" },
-    { label: "Edit Experiences", icon: Briefcase, to: "/admin/experiences", accent: "text-violet-500" },
-  ] as const;
-
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="space-y-8"
-    >
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-14">
       <motion.div variants={item}>
         <AdminPageHeader
-          eyebrow="Welcome back"
-          title="Admin Dashboard"
-          description="Review portfolio health, unread messages, and quick links to the content that needs attention."
+          eyebrow="Overview"
+          title="The record, at a glance"
+          description="What is published, what is waiting, and what needs a reply."
         />
       </motion.div>
 
-      <div className="grid grid-cols-12 gap-4">
-        {stats.map((s) => (
-          <StatCard key={s.label} {...s} />
-        ))}
-      </div>
+      <motion.section variants={item}>
+        <Ledger entries={ledger} />
+      </motion.section>
 
-      <div className="grid grid-cols-12 gap-4">
-        <motion.div variants={item} className="col-span-12 lg:col-span-8">
-          <Card className="h-full bg-background/60 backdrop-blur-md border-border/60 ring-0">
-            <CardHeader className="border-b border-border/40 pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base font-semibold tracking-tight text-foreground">Recent Messages</CardTitle>
-                  <CardDescription className="mt-0.5 text-xs">Latest contact form submissions</CardDescription>
-                </div>
+      <motion.section variants={item}>
+        <AdminSectionHeading index="01" label="Needs attention" />
+        {unread.length === 0 ? (
+          <p className="py-2 text-sm text-muted-foreground">
+            Nothing waiting. The inbox is clear.
+          </p>
+        ) : (
+          <Link
+            to="/admin/messages"
+            className="group flex items-baseline gap-4 border-b border-border/60 py-4 transition-colors hover:bg-muted/30"
+          >
+            <span className="font-display text-2xl font-semibold tabular-nums text-violet-600 dark:text-violet-400">
+              {String(unread.length).padStart(2, "0")}
+            </span>
+            <span className="flex-1 text-sm text-foreground">
+              unread message{unread.length === 1 ? "" : "s"} awaiting a reply
+            </span>
+            <ArrowRight className="size-4 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-1" />
+          </Link>
+        )}
+      </motion.section>
+
+      <motion.section variants={item}>
+        <AdminSectionHeading
+          index="02"
+          label="Recent messages"
+          action={
+            <Link
+              to="/admin/messages"
+              className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              View all
+            </Link>
+          }
+        />
+
+        {recentMessages.length === 0 ? (
+          <p className="py-2 text-sm text-muted-foreground">No messages yet.</p>
+        ) : (
+          <ul className="border-t border-border/60">
+            {recentMessages.map((message) => (
+              <li key={message.id} className="border-b border-border/60">
                 <Link
                   to="/admin/messages"
-                  className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-sm"
+                  className="grid gap-x-4 gap-y-1 py-3.5 transition-colors hover:bg-muted/30 sm:grid-cols-[10rem_1fr_auto] sm:items-baseline"
                 >
-                  View all <ArrowRight className="size-3" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {recentMessages.length === 0 ? (
-                <p className="px-4 py-10 text-center text-sm text-muted-foreground">No messages yet.</p>
-              ) : (
-                <ul className="divide-y divide-border/40">
-                  {recentMessages.map((msg, i) => (
-                    <motion.li
-                      key={msg.id}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + i * 0.06 }}
-                    >
-                      <Link to="/admin/messages" className="flex items-start gap-4 px-4 py-3.5 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted/60 text-xs font-bold uppercase text-foreground">
-                          {msg.name.charAt(0)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-foreground">{msg.name}</span>
-                            {!msg.isRead && (
-                              <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-amber-500/15 text-amber-500 border-amber-500/20">
-                                New
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="mt-0.5 truncate text-xs text-muted-foreground">{msg.body}</p>
-                        </div>
-                        <span className="shrink-0 text-[10px] text-muted-foreground/60">
-                          {new Date(msg.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                        </span>
-                      </Link>
-                    </motion.li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <div className="col-span-12 flex flex-col gap-4 lg:col-span-4">
-          <motion.div variants={item}>
-            <Card className="bg-background/60 backdrop-blur-md border-border/60 ring-0">
-              <CardHeader className="border-b border-border/40 pb-4">
-                <CardTitle className="text-base font-semibold tracking-tight text-foreground">Quick Actions</CardTitle>
-                <CardDescription className="text-xs">Jump to a section</CardDescription>
-              </CardHeader>
-              <CardContent className="p-2">
-                {quickActions.map(({ label, icon: Icon, to, accent }) => (
-                  <motion.div key={label} whileHover={{ x: 4 }} whileTap={{ scale: 0.97 }}>
-                    <Link
-                      to={to as never}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                    >
-                      <Icon className={cn("size-4", accent)} />
-                      {label}
-                      <ChevronRight className="ml-auto size-3.5 text-muted-foreground/50" />
-                    </Link>
-                  </motion.div>
-                ))}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {unread.length > 0 && (
-            <motion.div variants={item} whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }}>
-              <Link to="/admin/messages" className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-xl">
-                <Card className="border-amber-500/20 bg-amber-500/5 ring-0 backdrop-blur-md">
-                  <CardContent className="flex items-center gap-4 py-4">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-500">
-                      <Mail className="size-5" />
+                  <span className="truncate text-sm font-medium text-foreground">
+                    {message.name}
+                  </span>
+                  <span className="truncate text-sm text-muted-foreground">
+                    {message.body}
+                  </span>
+                  <span className="flex items-center justify-between gap-3 sm:justify-end">
+                    {message.isRead ? null : <AdminStatus label="New" tone="attention" />}
+                    <span className="font-mono text-[0.6875rem] tabular-nums whitespace-nowrap text-muted-foreground">
+                      {formatDate(message.createdAt)}
                     </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
-                        {unread.length} unread message{unread.length !== 1 ? "s" : ""}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Tap to review inbox</p>
-                    </div>
-                    <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground/60" />
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-          )}
-        </div>
-      </div>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </motion.section>
     </motion.div>
   );
 }
