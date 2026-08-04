@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { BriefcaseBusiness, GripVertical, Plus, MoreVertical, Pencil, Trash2 } from 'lucide-react'
-import { AdminEmptyState, AdminLoadingState, AdminPageHeader } from '@/features/admin/components/admin-page'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { BriefcaseBusiness, Images, Plus, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { AdminEmptyState, AdminLoadingState, AdminPageHeader, AdminStatus } from '@/features/admin/components/admin-page'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -22,12 +20,18 @@ import {
 import { useAdminExperiences } from '../hooks/use-admin-experiences'
 import { useExperienceMutations } from '../hooks/use-experience-mutations'
 import { ExperienceFormDialog } from './experience-form-dialog'
+import { AccomplishmentsDialog } from './accomplishments-dialog'
 import type { AdminExperienceFormValues } from '../types'
 import type { Experience } from '@/features/admin/types'
 import { toast } from 'sonner'
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+function formatPeriod(startDate: string, endDate: string | null) {
+  const format = (value: string) => {
+    const date = new Date(value)
+    return `${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`
+  }
+
+  return endDate ? `${format(startDate)} — ${format(endDate)}` : `${format(startDate)} — NOW`
 }
 
 export function AdminExperiencesView() {
@@ -37,6 +41,7 @@ export function AdminExperiencesView() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Experience | null>(null)
+  const [imagesTarget, setImagesTarget] = useState<Experience | null>(null)
 
   function openCreate() {
     setEditingExperience(null)
@@ -95,11 +100,11 @@ export function AdminExperiencesView() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <AdminPageHeader
         eyebrow="Experiences"
         title="Shape the timeline"
-        description="Maintain experience entries, chronology, and narrative summaries for the about page timeline."
+        description="Maintain roles, chronology, skills, and the accomplishment images shown on the about page."
         action={(
           <Button type="button" onClick={openCreate}>
             <Plus className="size-4" />
@@ -108,70 +113,95 @@ export function AdminExperiencesView() {
         )}
       />
 
-      <div className="grid gap-4">
-        {isLoading ? (
-          <AdminLoadingState description="Loading experiences..." />
-        ) : experiences.length === 0 ? (
-          <AdminEmptyState icon={BriefcaseBusiness} title="No experiences yet" description="Click New experience to add a timeline entry." />
-        ) : (
-          experiences.map((exp, index) => (
-            <motion.div
+      {isLoading ? (
+        <AdminLoadingState description="Loading experiences..." />
+      ) : experiences.length === 0 ? (
+        <AdminEmptyState
+          icon={BriefcaseBusiness}
+          title="No experiences yet"
+          description="Add a role and it will appear on the public experience record."
+        />
+      ) : (
+        <div className="border-t border-border/60">
+          {experiences.map((exp, index) => (
+            <motion.article
               key={exp.id}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, delay: index * 0.04 }}
+              className="grid gap-x-6 gap-y-3 border-b border-border/60 py-6 md:grid-cols-[8.5rem_1fr_auto]"
             >
-              <Card className="border-border/60 bg-background/70 backdrop-blur-md">
-                <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="flex items-center gap-2 text-xl tracking-tight">
-                      <BriefcaseBusiness className="size-4" />
-                      {exp.role}
-                    </CardTitle>
-                    <CardDescription>
-                      {exp.company} &middot; {formatDate(exp.startDate)}&ndash;{exp.endDate ? formatDate(exp.endDate) : 'Present'}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {exp.employmentType && <Badge variant="secondary">{exp.employmentType}</Badge>}
-                    <Badge variant="outline">Order {exp.orderIndex}</Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger render={<Button type="button" variant="ghost" size="icon" />}>
-                        <MoreVertical className="size-4" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEdit(exp)}>
-                          <Pencil className="mr-2 size-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setDeleteTarget(exp)} className="text-destructive">
-                          <Trash2 className="mr-2 size-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button type="button" variant="ghost" size="icon">
-                      <GripVertical className="size-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm leading-6 text-muted-foreground">
-                  <p>{exp.description}</p>
-                  {exp.skills && exp.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {exp.skills.map((skill) => (
-                        <Badge key={skill} variant="outline" className="font-mono text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))
-        )}
-      </div>
+              <div className="flex items-baseline gap-3 md:flex-col md:gap-1">
+                <p className="font-mono text-xs tabular-nums text-foreground">
+                  {formatPeriod(exp.startDate, exp.endDate)}
+                </p>
+                {exp.employmentType ? (
+                  <p className="font-mono text-[0.6875rem] text-muted-foreground">
+                    {exp.employmentType}
+                  </p>
+                ) : null}
+                {!exp.endDate ? <AdminStatus label="Current" tone="active" /> : null}
+              </div>
+
+              <div className="min-w-0">
+                <h2 className="font-display text-lg font-semibold tracking-tight text-foreground">
+                  {exp.role}
+                </h2>
+                <p className="font-mono text-xs text-muted-foreground">{exp.company}</p>
+
+                <p className="max-w-xl pt-2 text-sm leading-6 text-muted-foreground">
+                  {exp.description}
+                </p>
+
+                {exp.skills && exp.skills.length > 0 ? (
+                  <ul className="flex flex-wrap gap-x-3 gap-y-1 pt-3">
+                    {exp.skills.map((skill) => (
+                      <li
+                        key={skill}
+                        className="font-mono text-[0.6875rem] text-muted-foreground before:mr-1.5 before:text-border before:content-['/']"
+                      >
+                        {skill}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => setImagesTarget(exp)}
+                  className="mt-4 inline-flex items-center gap-2 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                >
+                  <Images className="size-3.5" />
+                  Manage images
+                </button>
+              </div>
+
+              <div className="flex items-start justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button type="button" variant="ghost" size="icon" />}>
+                    <MoreVertical className="size-4" />
+                    <span className="sr-only">Actions for {exp.role}</span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => openEdit(exp)}>
+                      <Pencil className="mr-2 size-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setImagesTarget(exp)}>
+                      <Images className="mr-2 size-4" />
+                      Manage images
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setDeleteTarget(exp)} className="text-destructive">
+                      <Trash2 className="mr-2 size-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      )}
 
       <ExperienceFormDialog
         open={formOpen}
@@ -181,12 +211,18 @@ export function AdminExperiencesView() {
         isPending={createMutation.isPending || updateMutation.isPending}
       />
 
+      <AccomplishmentsDialog
+        experience={imagesTarget}
+        onOpenChange={(open) => !open && setImagesTarget(null)}
+      />
+
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete experience</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the &ldquo;{deleteTarget?.role}&rdquo; role at {deleteTarget?.company}? This action cannot be undone.
+              Delete the &ldquo;{deleteTarget?.role}&rdquo; role at {deleteTarget?.company}? Any
+              uploaded accomplishment images go with it. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

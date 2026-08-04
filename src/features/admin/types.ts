@@ -4,6 +4,8 @@ export type Project = {
   description: string;
   link: string | null;
   imageUrl: string | null;
+  /** Appwrite file id when the cover was uploaded; null for external URLs. */
+  imageFileId: string | null;
   tags: string[];
   orderIndex: number;
   createdAt: string;
@@ -28,6 +30,18 @@ export type Experience = {
   description: string;
   employmentType: string | null;
   skills: string[];
+  orderIndex: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** An uploaded image documenting an accomplishment within an experience. */
+export type Accomplishment = {
+  id: string;
+  experienceId: string;
+  fileId: string;
+  imageUrl: string;
+  caption: string | null;
   orderIndex: number;
   createdAt: string;
   updatedAt: string;

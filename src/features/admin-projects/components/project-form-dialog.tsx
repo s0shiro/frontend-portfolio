@@ -39,7 +39,6 @@ export function ProjectFormDialog({
       title: '',
       description: '',
       link: '',
-      imageUrl: '',
       tags: '',
     },
   })
@@ -50,11 +49,10 @@ export function ProjectFormDialog({
         title: project.title,
         description: project.description,
         link: project.link ?? '',
-        imageUrl: project.imageUrl ?? '',
         tags: project.tags.join(', '),
       })
     } else {
-      form.reset({ title: '', description: '', link: '', imageUrl: '', tags: '' })
+      form.reset({ title: '', description: '', link: '', tags: '' })
     }
   }, [project, form])
 
@@ -96,28 +94,18 @@ export function ProjectFormDialog({
             )}
           />
 
-          <div className="grid grid-cols-2 gap-4">
-            <Controller
-              name="link"
-              control={form.control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel>Link</FieldLabel>
-                  <Input {...field} placeholder="https://..." />
-                </Field>
-              )}
-            />
-            <Controller
-              name="imageUrl"
-              control={form.control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel>Image URL</FieldLabel>
-                  <Input {...field} placeholder="https://..." />
-                </Field>
-              )}
-            />
-          </div>
+          {/* Cover image is uploaded separately via the row's "Cover image" action,
+              which needs an existing project id to attach the file to. */}
+          <Controller
+            name="link"
+            control={form.control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel>Link</FieldLabel>
+                <Input {...field} placeholder="https://..." />
+              </Field>
+            )}
+          />
 
           <Controller
             name="tags"

@@ -1,5 +1,12 @@
 import { clientEnv } from '@/lib/env'
 
+export type ApiAccomplishment = {
+  id: string
+  imageUrl: string
+  caption: string | null
+  orderIndex: number
+}
+
 export type ApiExperience = {
   id: string
   company: string
@@ -10,6 +17,7 @@ export type ApiExperience = {
   employmentType?: string | null
   skills?: string[]
   orderIndex: number
+  accomplishments?: ApiAccomplishment[]
 }
 
 export async function fetchPublicExperiences(): Promise<ApiExperience[]> {

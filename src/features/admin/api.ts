@@ -1,9 +1,23 @@
 import { clientEnv } from '@/lib/env'
-import type { Experience, Message, Project } from './types'
+import type { Accomplishment, Experience, Message, Project } from './types'
 
 type ApiResponse<T> = {
   success: boolean
   data: T
+}
+
+type ApiErrorPayload = {
+  error?: string
+}
+
+/** Pulls the server's error message out of a failed response, if it sent one. */
+async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const payload = (await response.json()) as ApiErrorPayload
+    return payload.error ?? fallback
+  } catch {
+    return fallback
+  }
 }
 
 type MessageFilters = {
@@ -25,7 +39,31 @@ async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Pro
   })
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
+    throw new Error(await readErrorMessage(response, `Request failed: ${response.status}`))
+  }
+
+  const payload = (await response.json()) as ApiResponse<T>
+  return payload.data
+}
+
+/**
+ * Multipart sibling of requestJson. Content-Type is deliberately left unset so
+ * the browser can append the multipart boundary itself — setting it by hand
+ * produces a body the server cannot parse.
+ */
+async function requestFormData<T>(
+  endpoint: string,
+  formData: FormData,
+  method = 'POST',
+): Promise<T> {
+  const response = await fetch(`${clientEnv.VITE_API_URL}${endpoint}`, {
+    method,
+    credentials: 'include',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, `Upload failed: ${response.status}`))
   }
 
   const payload = (await response.json()) as ApiResponse<T>
@@ -139,6 +177,86 @@ export function updateExperience(id: string, data: UpdateExperienceInput): Promi
 
 export function deleteExperience(id: string): Promise<Experience> {
   return requestJson<Experience>(`/api/admin/experiences/${id}`, {
+    method: 'DELETE',
+  })
+}
+
+// ── Experience accomplishments ──
+
+export function fetchAccomplishments(experienceId: string): Promise<Accomplishment[]> {
+  return requestJson<Accomplishment[]>(
+    `/api/admin/experiences/${experienceId}/accomplishments`,
+  )
+}
+
+export function uploadAccomplishment(
+  experienceId: string,
+  file: File,
+  caption?: string,
+): Promise<Accomplishment> {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  if (caption?.trim()) {
+    formData.append('caption', caption.trim())
+  }
+
+  return requestFormData<Accomplishment>(
+    `/api/admin/experiences/${experienceId}/accomplishments`,
+    formData,
+  )
+}
+
+export function updateAccomplishment(
+  experienceId: string,
+  accomplishmentId: string,
+  data: { caption?: string | null; orderIndex?: number },
+): Promise<Accomplishment> {
+  return requestJson<Accomplishment>(
+    `/api/admin/experiences/${experienceId}/accomplishments/${accomplishmentId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    },
+  )
+}
+
+export function deleteAccomplishment(
+  experienceId: string,
+  accomplishmentId: string,
+): Promise<Accomplishment> {
+  return requestJson<Accomplishment>(
+    `/api/admin/experiences/${experienceId}/accomplishments/${accomplishmentId}`,
+    {
+      method: 'DELETE',
+    },
+  )
+}
+
+export function reorderAccomplishments(
+  experienceId: string,
+  updates: Array<{ id: string; orderIndex: number }>,
+): Promise<Accomplishment[]> {
+  return requestJson<Accomplishment[]>(
+    `/api/admin/experiences/${experienceId}/accomplishments/reorder`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ updates }),
+    },
+  )
+}
+
+// ── Project cover image ──
+
+export function setProjectImage(projectId: string, file: File): Promise<Project> {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  return requestFormData<Project>(`/api/admin/projects/${projectId}/image`, formData, 'PUT')
+}
+
+export function clearProjectImage(projectId: string): Promise<Project> {
+  return requestJson<Project>(`/api/admin/projects/${projectId}/image`, {
     method: 'DELETE',
   })
 }
