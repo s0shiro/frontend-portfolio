@@ -1,7 +1,7 @@
 import { Monitor, Moon, Sun, type LucideIcon } from "lucide-react"
-import { motion } from "framer-motion"
+import { LayoutGroup, motion } from "framer-motion"
 import { useTheme } from "next-themes"
-import { useSyncExternalStore } from "react"
+import { useId, useSyncExternalStore } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -18,11 +18,12 @@ function ThemeOption({
 }) {
   return (
     <button
+      type="button"
+      aria-label={`Use ${value} theme`}
+      aria-pressed={isActive}
       className={cn(
-        "relative flex h-8 w-10 items-center justify-center rounded-full transition-colors",
-        isActive
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground"
+        "relative flex size-11 items-center justify-center rounded-full transition-colors",
+        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
       )}
       onClick={() => onClick(value)}
     >
@@ -34,8 +35,8 @@ function ThemeOption({
           className="absolute inset-0 rounded-full border border-border bg-background shadow-sm"
           transition={{
             type: "spring",
-            bounce: 0.2,
-            duration: 0.6,
+            bounce: 0.15,
+            duration: 0.3,
           }}
         />
       )}
@@ -50,11 +51,12 @@ const THEME_OPTIONS = [
 ]
 
 export function ThemeToggle() {
+  const id = useId()
   const { theme, setTheme } = useTheme()
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
-    () => false
+    () => false,
   )
 
   if (!mounted) {
@@ -62,18 +64,20 @@ export function ThemeToggle() {
   }
 
   return (
-    <div className="flex w-fit items-center justify-center rounded-full border border-border/60 bg-muted/20 p-1 backdrop-blur-sm mx-auto">
-      <div className="flex items-center gap-1">
-        {THEME_OPTIONS.map((option) => (
-          <ThemeOption
-            key={option.value}
-            icon={option.icon}
-            value={option.value}
-            isActive={theme === option.value}
-            onClick={setTheme}
-          />
-        ))}
+    <LayoutGroup id={id}>
+      <div className="flex w-fit items-center justify-center rounded-full border border-border/60 bg-muted/20 p-1 backdrop-blur-sm mx-auto">
+        <div className="flex items-center gap-1">
+          {THEME_OPTIONS.map((option) => (
+            <ThemeOption
+              key={option.value}
+              icon={option.icon}
+              value={option.value}
+              isActive={theme === option.value}
+              onClick={setTheme}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </LayoutGroup>
   )
 }
