@@ -2,14 +2,11 @@ import { ChevronRight } from "lucide-react"
 import type { ComponentProps } from "react"
 import ReactMarkdown from "react-markdown"
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ContactSheet } from "@/features/portfolio/components/contact-sheet"
 import type { ApiAccomplishment } from "@/features/portfolio/api/get-experiences"
 import { cn } from "@/lib/utils"
+import { Reveal } from "@/components/shared/portfolio-motion"
 
 export type ExperiencePositionItemType = {
   /** Unique identifier for the position */
@@ -55,8 +52,10 @@ export type WorkExperienceProps = {
 export function WorkExperience({ className, experiences }: WorkExperienceProps) {
   return (
     <div className={cn("border-t border-border/60", className)}>
-      {experiences.map((experience) => (
-        <ExperienceItem key={experience.id} experience={experience} />
+      {experiences.map((experience, index) => (
+        <Reveal key={experience.id} delay={Math.min(index, 3) * 0.06} className="record-row">
+          <ExperienceItem experience={experience} />
+        </Reveal>
       ))}
     </div>
   )
@@ -68,7 +67,7 @@ export type ExperienceItemProps = {
 
 export function ExperienceItem({ experience }: ExperienceItemProps) {
   return (
-    <section className="record-row py-8">
+    <section className="py-8">
       <header className="flex items-center gap-3 pb-6">
         {experience.companyLogo ? (
           <img
@@ -107,9 +106,7 @@ export type ExperiencePositionItemProps = {
   position: ExperiencePositionItemType
 }
 
-export function ExperiencePositionItem({
-  position,
-}: ExperiencePositionItemProps) {
+export function ExperiencePositionItem({ position }: ExperiencePositionItemProps) {
   const accomplishments = position.accomplishments ?? []
 
   return (
@@ -127,10 +124,7 @@ export function ExperiencePositionItem({
       </div>
 
       <div className="min-w-0">
-        <Collapsible
-          defaultOpen={position.isExpanded}
-          disabled={!position.description}
-        >
+        <Collapsible defaultOpen={position.isExpanded} disabled={!position.description}>
           <CollapsibleTrigger
             className={cn(
               "group not-prose -mx-2 flex w-[calc(100%+1rem)] items-center gap-2 rounded px-2 py-1 text-left select-none",

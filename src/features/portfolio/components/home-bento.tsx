@@ -1,116 +1,274 @@
+import { useRef } from 'react'
 import { Link } from '@tanstack/react-router'
-import { motion } from 'framer-motion'
-import { ArrowRight, ArrowUpRight } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  Plus,
+} from 'lucide-react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 
-import heroImage from '@/assets/images/hero.png'
-import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
 import { portfolioContent } from '@/features/portfolio/content'
-import { cn } from '@/lib/utils'
+import resumePDF from '@/assets/files/NEILVEN_MASCARINAS.pdf'
+import { Reveal, SectionLabel } from '@/components/shared/portfolio-motion'
+import { useMotionPreference } from '@/lib/motion-preference'
+import { MotionSculpture } from './motion-sculpture'
+import { ProjectIndex } from './projects-grid'
 
-const rise = {
-  hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0 },
-}
+gsap.registerPlugin(useGSAP)
 
-const stagger = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.07, delayChildren: 0.05 },
-  },
-}
+const disciplines = [
+  'THOUGHTFUL INTERFACES',
+  'SOLID FOUNDATIONS',
+  'REAL-WORLD SOLUTIONS',
+]
 
 export function HomeBento() {
+  const root = useRef<HTMLDivElement>(null)
   const { profile, skillGroups } = portfolioContent
-  const [firstName, ...restName] = profile.fullName.split(' ')
+  const { enabled } = useMotionPreference()
+
+  useGSAP(
+    () => {
+      if (!enabled) return
+      gsap.from('.hero-word', {
+        yPercent: 105,
+        duration: 0.85,
+        stagger: 0.12,
+        ease: 'power4.out',
+        delay: 0.1,
+      })
+      gsap.from('.hero-enter', {
+        opacity: 0,
+        y: 14,
+        duration: 0.35,
+        stagger: 0.06,
+        delay: 0.25,
+      })
+      const ticker = gsap.to('.discipline-track', {
+        xPercent: -50,
+        duration: 36,
+        repeat: -1,
+        ease: 'none',
+      })
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting && !document.hidden) ticker.resume()
+        else ticker.pause()
+      })
+      const track = root.current?.querySelector('.discipline-strip')
+      if (track) observer.observe(track)
+      const onVisibility = () => {
+        if (document.hidden) ticker.pause()
+        else if (
+          track &&
+          track.getBoundingClientRect().top < window.innerHeight &&
+          track.getBoundingClientRect().bottom > 0
+        )
+          ticker.resume()
+      }
+      document.addEventListener('visibilitychange', onVisibility)
+      return () => {
+        observer.disconnect()
+        document.removeEventListener('visibilitychange', onVisibility)
+      }
+    },
+    { scope: root, dependencies: [enabled], revertOnUpdate: true },
+  )
 
   return (
-    <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-16">
-      <section className="grid items-end gap-10 lg:grid-cols-[1fr_18rem]">
-        <div>
-          <motion.h1 variants={rise} className="display-xl text-foreground">
-            <span className="block text-muted-foreground">Hi, I&apos;m</span>
-            <span className="block">{firstName}</span>
-            <span className="block">{restName.join(' ')}</span>
-          </motion.h1>
-
-          <motion.p
-            variants={rise}
-            className="max-w-lg pt-8 text-lg leading-relaxed text-foreground/90"
-          >
-            Real problems. Maintainable solutions.{' '}
-            <span className="text-violet-600 dark:text-violet-400">Shipped.</span>
-          </motion.p>
-
-          <motion.nav variants={rise} className="flex flex-wrap items-center gap-x-8 gap-y-3 pt-8">
-            <Link
-              to="/projects"
-              className="group flex items-center gap-2 font-mono text-xs uppercase tracking-[0.16em] text-foreground"
-            >
-              <span className="border-b border-foreground pb-0.5">View projects</span>
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-            </Link>
-            <Link
-              to="/contact"
-              className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Contact
-            </Link>
-            <a
-              href={resumePDF}
-              download="NEILVEN_MASCARINAS.pdf"
-              className="group flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Download CV
-              <ArrowUpRight className="size-3.5" />
-            </a>
-          </motion.nav>
+    <div ref={root}>
+      <section className="home-hero" aria-labelledby="hero-heading">
+        <div className="hero-topline hero-enter">
+          <span className="eyebrow">
+            Full-stack developer / Creative problem solver
+          </span>
+          <span className="availability">
+            <span />
+            Open to opportunities
+          </span>
         </div>
 
-        <motion.div variants={rise} className="relative hidden lg:block">
-          <div
-            className="pointer-events-none absolute bottom-0 left-1/2 h-2/3 w-full -translate-x-1/2 rounded-full bg-violet-400/15 blur-3xl dark:bg-violet-500/10"
-            aria-hidden
-          />
-          <img
-            src={heroImage}
-            alt=""
-            aria-hidden
-            className="relative ml-auto max-h-[26rem] w-full object-contain object-bottom"
-          />
-        </motion.div>
+        <div className="hero-composition">
+          <div className="hero-type">
+            <h1
+              id="hero-heading"
+              className="hero-heading"
+              aria-label="Ideas. Code. Impact."
+            >
+              {['IDEAS.', 'CODE.', 'IMPACT.'].map((word, index) => (
+                <span
+                  key={word}
+                  className={`hero-line hero-line-${index}`}
+                  aria-hidden="true"
+                >
+                  <span className="hero-word">{word}</span>
+                </span>
+              ))}
+            </h1>
+            <div className="hero-description hero-enter">
+              <ArrowDownRight
+                className="hero-description-arrow"
+                size={27}
+                strokeWidth={1.3}
+                aria-hidden="true"
+              />
+              <p>
+                I’m <strong>Neilven Mascariñas.</strong> I turn complex problems
+                into useful, considered digital experiences.
+              </p>
+            </div>
+            <div className="hero-actions hero-enter">
+              <a
+                href="#selected-work"
+                className="action-link action-link-primary"
+              >
+                Explore my work <ArrowDown size={16} aria-hidden="true" />
+              </a>
+              <Link to="/contact" className="text-link">
+                Let’s talk <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+              <a
+                href={resumePDF}
+                download="NEILVEN_MASCARINAS.pdf"
+                className="text-link hero-resume"
+              >
+                Download résumé <ArrowDown size={14} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+          <MotionSculpture />
+        </div>
+
+        <div className="hero-bottomline hero-enter">
+          <span>
+            {profile.location}
+            <span className="hero-location-code"> / PH</span>
+          </span>
+          <span className="hero-bottom-note">
+            A little curiosity. A lot of possibility.
+          </span>
+          <a href="#selected-work">
+            Scroll to discover <ArrowDown size={12} aria-hidden="true" />
+          </a>
+        </div>
       </section>
 
-      <motion.section variants={rise}>
-        <div className="flex items-baseline gap-4 pb-6">
-          <span className="font-mono text-[0.6875rem] tabular-nums text-muted-foreground">01</span>
-          <span className="eyebrow">Stack</span>
-          <span className="h-px flex-1 bg-border/70" />
-        </div>
-
-        <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-          {skillGroups.map((group) => (
-            <div key={group.category} className="border-t border-border/60 pt-4">
-              <h2 className="pb-3 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-foreground">
-                {group.category}
-              </h2>
-              <ul className="space-y-1.5">
-                {group.items.map((item) => (
-                  <li
-                    key={item}
-                    className={cn(
-                      'font-mono text-sm text-muted-foreground',
-                      "before:mr-2 before:text-border before:content-['/']",
-                    )}
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
+      <div
+        className="discipline-strip"
+        role="img"
+        aria-label={disciplines.join('. ')}
+      >
+        <div className="discipline-track" aria-hidden="true">
+          {[0, 1].map((copy) => (
+            <div className="discipline-set" key={copy}>
+              {disciplines.map((item) => (
+                <span key={item}>
+                  {item}
+                  <Plus size={29} strokeWidth={1} />
+                </span>
+              ))}
             </div>
           ))}
         </div>
-      </motion.section>
-    </motion.div>
+      </div>
+
+      <section id="selected-work" className="home-section">
+        <SectionLabel index="01" label="Selected work" />
+        <Reveal className="section-heading-row">
+          <h2 className="section-display">
+            LESS THEORY.
+            <br />
+            <span className="muted-display">MORE MAKING.</span>
+          </h2>
+          <div className="section-heading-aside">
+            <p>
+              Real workflows. Thoughtful interfaces.
+              <br />A few things I’ve put into the world.
+            </p>
+            <Link to="/projects" className="text-link">
+              All projects <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
+        </Reveal>
+        <ProjectIndex preview />
+      </section>
+
+      <section className="home-section home-about">
+        <SectionLabel index="02" label="The person behind the pixels" />
+        <div className="home-about-grid">
+          <Reveal>
+            <h2 className="section-display">
+              CURIOUS MIND.
+              <br />
+              BUILDER AT
+              <br />
+              <span className="muted-display">HEART.</span>
+            </h2>
+            <Link to="/about" className="text-link about-link">
+              A bit more about me <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+          </Reveal>
+          <Reveal delay={0.08} className="home-about-copy">
+            <p className="large-copy">
+              Good software should feel simple. Even when what’s underneath
+              isn’t.
+            </p>
+            <p>
+              {profile.summary} From the first interface to the last API
+              endpoint, I care about how the whole thing works together.
+            </p>
+            <p>
+              I’m based in Marinduque, Philippines, and looking for a team where
+              I can contribute, keep learning, and build things that matter.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="home-section capabilities-section">
+        <SectionLabel index="03" label="Tools of the trade" />
+        <div className="capabilities-grid">
+          <Reveal>
+            <h2 className="section-display">
+              THE RIGHT
+              <br />
+              TOOLS. A<br />
+              <span className="muted-display">CLEAR PURPOSE.</span>
+            </h2>
+            <p className="capabilities-intro">
+              An evolving toolkit for the whole journey, from a rough idea to a
+              working product.
+            </p>
+          </Reveal>
+          <div className="skill-index">
+            {skillGroups.map((group, index) => (
+              <Reveal key={group.category} delay={index * 0.04}>
+                <details className="skill-record" open={index === 0}>
+                  <summary>
+                    <span className="skill-number">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <h3>{group.category}</h3>
+                    <Plus size={18} aria-hidden="true" />
+                  </summary>
+                  <ul>
+                    {group.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </details>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Reveal className="home-endnote">
+        <span>Always learning. Always building.</span>
+        <ArrowRight size={20} strokeWidth={1.3} aria-hidden="true" />
+      </Reveal>
+    </div>
   )
 }

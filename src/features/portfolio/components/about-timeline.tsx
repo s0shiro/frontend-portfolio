@@ -1,7 +1,11 @@
 import { type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { AlertCircle, BriefcaseIcon } from 'lucide-react'
-import { motion } from 'framer-motion'
+import {
+  AnimatedHeading,
+  Reveal,
+  SectionLabel,
+} from '@/components/shared/portfolio-motion'
 
 import type {
   ExperienceItemType,
@@ -9,7 +13,10 @@ import type {
 } from '@/components/work-experience/work-experience'
 import { WorkExperience } from '@/components/work-experience/work-experience'
 import { portfolioContent } from '@/features/portfolio/content'
-import { fetchPublicExperiences, type ApiExperience } from '../api/get-experiences'
+import {
+  fetchPublicExperiences,
+  type ApiExperience,
+} from '../api/get-experiences'
 
 function formatPeriod(start: string, end: string | null): string {
   const fmt = (value: string) => {
@@ -20,7 +27,9 @@ function formatPeriod(start: string, end: string | null): string {
   return end ? `${fmt(start)} — ${fmt(end)}` : `${fmt(start)} — NOW`
 }
 
-function formatExperiences(apiExperiences: ApiExperience[] | undefined): ExperienceItemType[] {
+function formatExperiences(
+  apiExperiences: ApiExperience[] | undefined,
+): ExperienceItemType[] {
   if (!apiExperiences) return []
 
   // Group API experiences by company name
@@ -35,20 +44,23 @@ function formatExperiences(apiExperiences: ApiExperience[] | undefined): Experie
   for (const [company, entries] of companyMap) {
     // Sort positions: newest first by startDate
     const sorted = [...entries].sort(
-      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+      (a, b) =>
+        new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     )
 
-    const positions: ExperiencePositionItemType[] = sorted.map((entry, index) => ({
-      id: entry.id,
-      title: entry.role,
-      employmentPeriod: formatPeriod(entry.startDate, entry.endDate),
-      employmentType: entry.employmentType ?? undefined,
-      description: entry.description ?? undefined,
-      skills: entry.skills ?? undefined,
-      accomplishments: entry.accomplishments ?? [],
-      // Lead with the most recent role open; older ones stay collapsed.
-      isExpanded: index === 0,
-    }))
+    const positions: ExperiencePositionItemType[] = sorted.map(
+      (entry, index) => ({
+        id: entry.id,
+        title: entry.role,
+        employmentPeriod: formatPeriod(entry.startDate, entry.endDate),
+        employmentType: entry.employmentType ?? undefined,
+        description: entry.description ?? undefined,
+        skills: entry.skills ?? undefined,
+        accomplishments: entry.accomplishments ?? [],
+        // Lead with the most recent role open; older ones stay collapsed.
+        isExpanded: index === 0,
+      }),
+    )
 
     const hasCurrentRole = sorted.some((entry) => !entry.endDate)
 
@@ -79,18 +91,6 @@ function ExperienceSkeleton() {
           </div>
         </div>
       ))}
-    </div>
-  )
-}
-
-function SectionHeading({ index, label }: { index: string; label: string }) {
-  return (
-    <div className="flex items-baseline gap-4 pb-6">
-      <span className="font-mono text-[0.6875rem] tabular-nums text-muted-foreground">
-        {index}
-      </span>
-      <span className="eyebrow">{label}</span>
-      <span className="h-px flex-1 bg-border/70" />
     </div>
   )
 }
@@ -138,65 +138,72 @@ export function AboutTimeline() {
       </div>
     )
   } else {
-    experienceContent = (
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.05 }}
-        transition={{ duration: 0.4 }}
-      >
-        <WorkExperience experiences={experiences} />
-      </motion.div>
-    )
+    experienceContent = <WorkExperience experiences={experiences} />
   }
 
   return (
-    <div className="space-y-16">
-      <header className="space-y-6">
-        <span className="eyebrow">About</span>
-        <h1 className="display-xl max-w-4xl text-foreground">
-          Building systems that support real operations.
-        </h1>
-        <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-          {portfolioContent.profile.summary}
-        </p>
+    <div className="inner-page about-page">
+      <header className="inner-page-header">
+        <SectionLabel index="02" label="A little about me" />
+        <AnimatedHeading text={'MORE THAN\nTHE CODE.'} />
       </header>
 
-      <section>
-        <SectionHeading index="01" label="Experience" />
+      <section className="about-introduction" aria-label="Introduction">
+        <Reveal className="about-intro-statement">
+          <p className="large-copy">
+            A developer with a curious mind and a soft spot for making things
+            work better.
+          </p>
+        </Reveal>
+        <Reveal delay={0.1} className="about-story">
+          <p>{portfolioContent.profile.summary}</p>
+          <p>
+            I enjoy connecting the dots between what people need and what
+            technology can do. That means thinking about the interface, the
+            data, and all the small decisions that make a product feel right.
+          </p>
+          <dl className="about-facts">
+            <div>
+              <dt>Home base</dt>
+              <dd>{portfolioContent.profile.location}</dd>
+            </div>
+            <div>
+              <dt>Currently</dt>
+              <dd>Open to frontend & full-stack roles</dd>
+            </div>
+          </dl>
+        </Reveal>
+      </section>
+
+      <section className="about-record-section">
+        <SectionLabel index="01" label="Along the way" />
+        <h2>Experience.</h2>
         {experienceContent}
       </section>
 
-      <section>
-        <SectionHeading index="02" label="Education" />
-        <dl className="border-t border-border/60">
-          {portfolioContent.education.map((item) => (
-            <div
-              key={item.institution}
-              className="record-row grid gap-x-8 gap-y-1 py-5 md:grid-cols-[8.5rem_1fr]"
-            >
-              <dt className="font-display text-base font-semibold tracking-tight text-foreground md:col-start-2">
-                {item.institution}
-              </dt>
-              <dd className="font-mono text-xs text-muted-foreground md:col-start-1 md:row-start-1">
-                {item.note ? 'Honors' : 'Degree'}
-              </dd>
-              <dd className="text-sm leading-6 text-muted-foreground md:col-start-2">
-                {item.program}
-                {item.note ? (
-                  <span className="block pt-1 font-mono text-xs text-foreground/70">
-                    {item.note}
-                  </span>
-                ) : null}
-              </dd>
-            </div>
-          ))}
-        </dl>
+      <section className="about-record-section">
+        <SectionLabel index="02" label="The foundations" />
+        <h2>Education.</h2>
+        <Reveal>
+          <div>
+            {portfolioContent.education.map((item, index) => (
+              <div key={item.institution} className="education-record">
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <h3>{item.institution}</h3>
+                <p>
+                  {item.program}
+                  {item.note && <small>{item.note}</small>}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
       </section>
 
-      <section>
-        <SectionHeading index="03" label="Working style" />
-        <div className="grid gap-x-8 gap-y-6 sm:grid-cols-3">
+      <section className="about-record-section">
+        <SectionLabel index="03" label="A few things I believe" />
+        <h2>How I approach the work.</h2>
+        <div className="principle-grid">
           {[
             {
               heading: 'Readable over clever',
@@ -210,13 +217,14 @@ export function AboutTimeline() {
               heading: 'Full-stack by choice',
               body: 'Product decisions and implementation quality matter equally, so I want a hand in both.',
             },
-          ].map((item) => (
-            <div key={item.heading} className="border-t border-border/60 pt-4">
-              <h3 className="pb-2 font-display text-base font-semibold tracking-tight text-foreground">
-                {item.heading}
-              </h3>
-              <p className="text-sm leading-6 text-muted-foreground">{item.body}</p>
-            </div>
+          ].map((item, index) => (
+            <Reveal key={item.heading} delay={index * 0.06}>
+              <span className="principle-number">
+                {String(index + 1).padStart(2, '0')} /
+              </span>
+              <h3>{item.heading}</h3>
+              <p>{item.body}</p>
+            </Reveal>
           ))}
         </div>
       </section>

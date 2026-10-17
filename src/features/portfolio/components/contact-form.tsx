@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
 import { z } from 'zod'
-import { motion } from 'framer-motion'
+import { Reveal } from '@/components/shared/portfolio-motion'
 import { Send } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
 import { submitContactForm } from '../api/submit-contact'
-
 
 const contactFormSchema = z.object({
   name: z.string().min(2, {
@@ -54,26 +53,43 @@ export function ContactForm() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="w-full max-w-2xl"
-    >
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <Reveal className="w-full max-w-2xl">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="contact-form space-y-8"
+        noValidate
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Controller
             name="name"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel className="text-sm font-medium text-foreground">Name</FieldLabel>
+                <FieldLabel
+                  htmlFor="contact-name"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Name
+                </FieldLabel>
                 <Input
+                  id="contact-name"
                   {...field}
+                  autoComplete="name"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={
+                    fieldState.error ? 'contact-name-error' : undefined
+                  }
                   placeholder="Your name"
                   className="h-12 bg-background/50 backdrop-blur-sm border-border/40 focus:border-primary/40 focus:ring-primary/20 text-base"
                 />
-                <FieldError errors={fieldState.error ? [{ message: fieldState.error.message }] : []} />
+                <FieldError
+                  id="contact-name-error"
+                  errors={
+                    fieldState.error
+                      ? [{ message: fieldState.error.message }]
+                      : []
+                  }
+                />
               </Field>
             )}
           />
@@ -83,14 +99,32 @@ export function ContactForm() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel className="text-sm font-medium text-foreground">Email</FieldLabel>
+                <FieldLabel
+                  htmlFor="contact-email"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Email
+                </FieldLabel>
                 <Input
+                  id="contact-email"
                   {...field}
                   type="email"
+                  autoComplete="email"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={
+                    fieldState.error ? 'contact-email-error' : undefined
+                  }
                   placeholder="you@example.com"
                   className="h-12 bg-background/50 backdrop-blur-sm border-border/40 focus:border-primary/40 focus:ring-primary/20 text-base"
                 />
-                <FieldError errors={fieldState.error ? [{ message: fieldState.error.message }] : []} />
+                <FieldError
+                  id="contact-email-error"
+                  errors={
+                    fieldState.error
+                      ? [{ message: fieldState.error.message }]
+                      : []
+                  }
+                />
               </Field>
             )}
           />
@@ -101,14 +135,31 @@ export function ContactForm() {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel className="text-sm font-medium text-foreground">Message</FieldLabel>
+              <FieldLabel
+                htmlFor="contact-message"
+                className="text-sm font-medium text-foreground"
+              >
+                Message
+              </FieldLabel>
               <Textarea
+                id="contact-message"
                 {...field}
+                aria-invalid={fieldState.invalid}
+                aria-describedby={
+                  fieldState.error ? 'contact-message-error' : undefined
+                }
                 placeholder="Tell me about the role, project, or collaboration you have in mind."
                 rows={5}
                 className="bg-background/50 backdrop-blur-sm border-border/40 focus:border-primary/40 focus:ring-primary/20 resize-none text-base p-4"
               />
-              <FieldError errors={fieldState.error ? [{ message: fieldState.error.message }] : []} />
+              <FieldError
+                id="contact-message-error"
+                errors={
+                  fieldState.error
+                    ? [{ message: fieldState.error.message }]
+                    : []
+                }
+              />
             </Field>
           )}
         />
@@ -117,18 +168,18 @@ export function ContactForm() {
           type="submit"
           size="lg"
           disabled={mutation.isPending}
-          className="h-11 w-full rounded-2xl px-8 sm:w-auto"
+          className="contact-submit group w-full sm:w-auto"
         >
           {mutation.isPending ? (
             'Sending...'
           ) : (
             <>
               Send Message
-              <Send className="ml-2 h-4 w-4" />
+              <Send className="ml-2 h-4 w-4 transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5 motion-safe:group-focus-visible:-translate-y-0.5 motion-safe:group-focus-visible:translate-x-0.5" />
             </>
           )}
         </Button>
       </form>
-    </motion.div>
+    </Reveal>
   )
 }

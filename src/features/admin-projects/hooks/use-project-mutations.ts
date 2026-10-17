@@ -1,12 +1,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createProject, updateProject, deleteProject } from '@/features/admin/api'
-import type { CreateProjectInput, UpdateProjectInput } from '@/features/admin/api'
+import {
+  createProject,
+  updateProject,
+  deleteProject,
+} from '@/features/admin/api'
+import type {
+  CreateProjectInput,
+  UpdateProjectInput,
+} from '@/features/admin/api'
 
 export function useProjectMutations() {
   const queryClient = useQueryClient()
 
   const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ['admin', 'projects'] })
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['admin', 'projects'] }),
+      queryClient.invalidateQueries({ queryKey: ['portfolio', 'projects'] }),
+    ])
 
   const createMutation = useMutation({
     mutationFn: (data: CreateProjectInput) => createProject(data),
