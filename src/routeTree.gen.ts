@@ -24,6 +24,9 @@ const ProjectsLazyRouteImport = createFileRoute('/projects')()
 const ContactLazyRouteImport = createFileRoute('/contact')()
 const AboutLazyRouteImport = createFileRoute('/about')()
 const IndexLazyRouteImport = createFileRoute('/')()
+const ProjectsProjectIdLazyRouteImport = createFileRoute(
+  '/projects_/$projectId',
+)()
 
 const ProjectsLazyRoute = ProjectsLazyRouteImport.update({
   id: '/projects',
@@ -55,6 +58,13 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const ProjectsProjectIdLazyRoute = ProjectsProjectIdLazyRouteImport.update({
+  id: '/projects_/$projectId',
+  path: '/projects/$projectId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/projects_.$projectId.lazy').then((d) => d.Route),
+)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -98,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/projects/$projectId': typeof ProjectsProjectIdLazyRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -111,6 +122,7 @@ export interface FileRoutesByTo {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/projects/$projectId': typeof ProjectsProjectIdLazyRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -126,6 +138,7 @@ export interface FileRoutesById {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/projects_/$projectId': typeof ProjectsProjectIdLazyRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -142,6 +155,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/projects'
     | '/admin/users'
+    | '/projects/$projectId'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -155,6 +169,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/projects'
     | '/admin/users'
+    | '/projects/$projectId'
     | '/admin'
   id:
     | '__root__'
@@ -169,6 +184,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/projects'
     | '/admin/users'
+    | '/projects_/$projectId'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -178,6 +194,7 @@ export interface RootRouteChildren {
   AboutLazyRoute: typeof AboutLazyRoute
   ContactLazyRoute: typeof ContactLazyRoute
   ProjectsLazyRoute: typeof ProjectsLazyRoute
+  ProjectsProjectIdLazyRoute: typeof ProjectsProjectIdLazyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -223,6 +240,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/projects_/$projectId': {
+      id: '/projects_/$projectId'
+      path: '/projects/$projectId'
+      fullPath: '/projects/$projectId'
+      preLoaderRoute: typeof ProjectsProjectIdLazyRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
       id: '/admin/users'
@@ -297,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutLazyRoute: AboutLazyRoute,
   ContactLazyRoute: ContactLazyRoute,
   ProjectsLazyRoute: ProjectsLazyRoute,
+  ProjectsProjectIdLazyRoute: ProjectsProjectIdLazyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
