@@ -3,6 +3,35 @@ export type SocialLink = {
   href: string
 }
 
+export type ProjectCaseStudy = {
+  slug: string
+  role: string
+  context: string
+  problem: string
+  contributions: { title: string; body: string }[]
+  decisions: { title: string; body: string }[]
+  outcome: string
+  repositories: { label: string; href: string }[]
+  gallery?: {
+    src: string
+    alt: string
+    caption: string
+    width: number
+    height: number
+  }[]
+}
+
+export type PublishedProject = {
+  id: string
+  title: string
+  description: string
+  link: string | null
+  imageUrl: string | null
+  tags: string[]
+  orderIndex: number
+  caseStudy?: ProjectCaseStudy
+}
+
 export type Profile = {
   fullName: string
   headline: string
